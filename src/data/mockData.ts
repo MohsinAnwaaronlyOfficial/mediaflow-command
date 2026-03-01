@@ -1,8 +1,69 @@
+export interface ChannelTeam {
+  managerName: string;
+  editorName: string;
+  editorEmail: string;
+  editorSalary: number;
+  salaryCurrency: 'USD' | 'PKR' | 'AED';
+  salaryPayDate: number;
+}
+
+export interface ChannelProxy {
+  address: string;
+  username: string;
+  password: string;
+  provider: string;
+  type: 'residential' | 'datacenter' | 'mobile';
+  buyDate: string;
+  price: number;
+  expiryDate: string;
+}
+
+export interface ShoppingProduct {
+  name: string;
+  link: string;
+}
+
+export interface ChannelShopping {
+  enabled: boolean;
+  products: ShoppingProduct[];
+  category: string;
+  amazonStoreId: string;
+  commissionRate: number;
+}
+
+export interface VideoDefaults {
+  madeForKids: boolean;
+  ageRestriction: boolean;
+  alteredContent: boolean;
+  automaticChapters: boolean;
+  featuredPlaces: boolean;
+  automaticConcepts: boolean;
+  captionCertification: 'None' | 'DWMRS' | 'EIA-608';
+  videoLocation: string;
+  license: 'Standard' | 'Creative Commons';
+  shortsRemixing: boolean;
+  category: string;
+  commentsMode: 'All' | 'Hold for review' | 'Off';
+  ratingsVisible: boolean;
+  addEndScreen: boolean;
+  addCards: boolean;
+  abTesting: boolean;
+  defaultPlaylist: string;
+}
+
+export interface VideoFolderFile {
+  name: string;
+  required: boolean;
+  present: boolean;
+  size?: string;
+}
+
 export interface Channel {
   id: string;
   name: string;
   niche: string;
   tier: 'T1' | 'T2' | 'T3' | 'T4';
+  youtubeChannelId: string;
   ixProfile: string;
   ixProfileId: string;
   ixStatus: 'open' | 'closed';
@@ -16,18 +77,92 @@ export interface Channel {
   publishTimes: string[];
   sheetUrl: string;
   videoFolder: string;
+  driveLongsFolderId: string;
+  driveShortsFolderId: string;
+  team: ChannelTeam;
+  proxyDetails: ChannelProxy;
+  shopping: ChannelShopping;
+  videoDefaults: VideoDefaults;
 }
 
+const defaultVideoDefaults: VideoDefaults = {
+  madeForKids: false, ageRestriction: false, alteredContent: true, automaticChapters: true,
+  featuredPlaces: false, automaticConcepts: true, captionCertification: 'None',
+  videoLocation: '', license: 'Standard', shortsRemixing: true,
+  category: 'Entertainment', commentsMode: 'All', ratingsVisible: true,
+  addEndScreen: true, addCards: true, abTesting: false, defaultPlaylist: '',
+};
+
 export const channels: Channel[] = [
-  { id: '1', name: 'BenchDecoded', niche: 'Judge', tier: 'T1', ixProfile: 'BD-Main', ixProfileId: 'IX-4821', ixStatus: 'open', proxy: '45.89.112.34:8080', dailyLimit: 2, videosToday: 1, todayViews: 187420, subscribers: 124500, uploadQueue: 3, status: 'active', publishTimes: ['09:00', '15:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/1abc', videoFolder: '/media/benchdecoded' },
-  { id: '2', name: 'TrialTales', niche: 'Judge', tier: 'T2', ixProfile: 'TT-Primary', ixProfileId: 'IX-4822', ixStatus: 'open', proxy: '45.89.112.35:8080', dailyLimit: 2, videosToday: 2, todayViews: 134200, subscribers: 847, uploadQueue: 1, status: 'active', publishTimes: ['10:00', '16:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/2def', videoFolder: '/media/trialtales' },
-  { id: '3', name: 'VerdictVault', niche: 'Judge', tier: 'T2', ixProfile: 'VV-Main', ixProfileId: 'IX-4823', ixStatus: 'open', proxy: '45.89.112.36:8080', dailyLimit: 2, videosToday: 1, todayViews: 98340, subscribers: 67200, uploadQueue: 2, status: 'active', publishTimes: ['11:00', '17:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/3ghi', videoFolder: '/media/verdictvault' },
-  { id: '4', name: 'TechVault', niche: 'Tech', tier: 'T3', ixProfile: 'TV-Main', ixProfileId: 'IX-4824', ixStatus: 'closed', proxy: '45.89.112.37:8080', dailyLimit: 3, videosToday: 2, todayViews: 245100, subscribers: 312000, uploadQueue: 4, status: 'active', publishTimes: ['08:00', '12:00', '18:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/4jkl', videoFolder: '/media/techvault' },
-  { id: '5', name: 'FoodFlicks', niche: 'Food', tier: 'T3', ixProfile: 'FF-Main', ixProfileId: 'IX-4825', ixStatus: 'closed', proxy: '45.89.112.38:8080', dailyLimit: 2, videosToday: 1, todayViews: 156300, subscribers: 89400, uploadQueue: 2, status: 'active', publishTimes: ['09:30', '15:30'], sheetUrl: 'https://docs.google.com/spreadsheets/d/5mno', videoFolder: '/media/foodflicks' },
-  { id: '6', name: 'LawBites', niche: 'Judge', tier: 'T4', ixProfile: 'LB-Main', ixProfileId: 'IX-4826', ixStatus: 'closed', proxy: '45.89.112.39:8080', dailyLimit: 1, videosToday: 1, todayViews: 25933, subscribers: 312, uploadQueue: 1, status: 'paused', publishTimes: ['14:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/6pqr', videoFolder: '/media/lawbites' },
+  {
+    id: '1', name: 'BenchDecoded', niche: 'Judge', tier: 'T1', youtubeChannelId: 'UCxBD1234abcd',
+    ixProfile: 'BD-Main', ixProfileId: 'IX-4821', ixStatus: 'open',
+    proxy: '45.89.112.34:8080', dailyLimit: 2, videosToday: 1, todayViews: 187420, subscribers: 124500, uploadQueue: 3, status: 'active',
+    publishTimes: ['09:00', '15:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/1abc', videoFolder: '/media/benchdecoded',
+    driveLongsFolderId: 'drive_bd_longs_001', driveShortsFolderId: 'drive_bd_shorts_001',
+    team: { managerName: 'Ahmed', editorName: 'Ali Raza', editorEmail: 'ali@unitymediaflow.com', editorSalary: 400, salaryCurrency: 'USD', salaryPayDate: 1 },
+    proxyDetails: { address: '45.89.112.34:8080', username: 'bd_user', password: '••••••', provider: 'Bright Data', type: 'residential', buyDate: '2026-01-15', price: 20, expiryDate: '2026-03-05' },
+    shopping: { enabled: true, products: [{ name: 'Legal Rights Handbook', link: 'https://amzn.to/abc1' }, { name: 'Home Security Camera', link: 'https://amzn.to/abc2' }], category: 'Legal Books', amazonStoreId: 'unitystore-20', commissionRate: 8 },
+    videoDefaults: { ...defaultVideoDefaults, abTesting: true, defaultPlaylist: 'Judge Compilations', videoLocation: 'New York' },
+  },
+  {
+    id: '2', name: 'TrialTales', niche: 'Judge', tier: 'T2', youtubeChannelId: 'UCxTT5678efgh',
+    ixProfile: 'TT-Primary', ixProfileId: 'IX-4822', ixStatus: 'open',
+    proxy: '45.89.112.35:8080', dailyLimit: 2, videosToday: 2, todayViews: 134200, subscribers: 847, uploadQueue: 1, status: 'active',
+    publishTimes: ['10:00', '16:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/2def', videoFolder: '/media/trialtales',
+    driveLongsFolderId: 'drive_tt_longs_001', driveShortsFolderId: 'drive_tt_shorts_001',
+    team: { managerName: 'Ahmed', editorName: 'Usman Khan', editorEmail: 'usman@unitymediaflow.com', editorSalary: 35000, salaryCurrency: 'PKR', salaryPayDate: 5 },
+    proxyDetails: { address: '45.89.112.35:8080', username: 'tt_user', password: '••••••', provider: 'DataImpulse', type: 'residential', buyDate: '2026-01-20', price: 15, expiryDate: '2026-04-12' },
+    shopping: { enabled: false, products: [], category: '', amazonStoreId: '', commissionRate: 0 },
+    videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Court Stories' },
+  },
+  {
+    id: '3', name: 'VerdictVault', niche: 'Judge', tier: 'T2', youtubeChannelId: 'UCxVV9012ijkl',
+    ixProfile: 'VV-Main', ixProfileId: 'IX-4823', ixStatus: 'open',
+    proxy: '45.89.112.36:8080', dailyLimit: 2, videosToday: 1, todayViews: 98340, subscribers: 67200, uploadQueue: 2, status: 'active',
+    publishTimes: ['11:00', '17:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/3ghi', videoFolder: '/media/verdictvault',
+    driveLongsFolderId: 'drive_vv_longs_001', driveShortsFolderId: 'drive_vv_shorts_001',
+    team: { managerName: 'Ahmed', editorName: 'Hamza Malik', editorEmail: 'hamza@unitymediaflow.com', editorSalary: 350, salaryCurrency: 'USD', salaryPayDate: 1 },
+    proxyDetails: { address: '45.89.112.36:8080', username: 'vv_user', password: '••••••', provider: 'Bright Data', type: 'datacenter', buyDate: '2026-02-01', price: 20, expiryDate: '2026-03-28' },
+    shopping: { enabled: true, products: [{ name: 'Courtroom Drama Book', link: 'https://amzn.to/vv1' }], category: 'Legal Books', amazonStoreId: 'unitystore-20', commissionRate: 7 },
+    videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Verdict Videos' },
+  },
+  {
+    id: '4', name: 'TechVault', niche: 'Tech', tier: 'T3', youtubeChannelId: 'UCxTV3456mnop',
+    ixProfile: 'TV-Main', ixProfileId: 'IX-4824', ixStatus: 'closed',
+    proxy: '45.89.112.37:8080', dailyLimit: 3, videosToday: 2, todayViews: 245100, subscribers: 312000, uploadQueue: 4, status: 'active',
+    publishTimes: ['08:00', '12:00', '18:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/4jkl', videoFolder: '/media/techvault',
+    driveLongsFolderId: 'drive_tv_longs_001', driveShortsFolderId: 'drive_tv_shorts_001',
+    team: { managerName: 'Sara', editorName: 'Zain Ahmed', editorEmail: 'zain@unitymediaflow.com', editorSalary: 500, salaryCurrency: 'USD', salaryPayDate: 1 },
+    proxyDetails: { address: '45.89.112.37:8080', username: 'tv_user', password: '••••••', provider: 'DataImpulse', type: 'datacenter', buyDate: '2026-01-10', price: 15, expiryDate: '2026-04-05' },
+    shopping: { enabled: true, products: [{ name: 'USB-C Hub', link: 'https://amzn.to/tv1' }, { name: 'Wireless Mouse', link: 'https://amzn.to/tv2' }, { name: 'Monitor Light', link: 'https://amzn.to/tv3' }], category: 'Tech Gadgets', amazonStoreId: 'unitytech-20', commissionRate: 6 },
+    videoDefaults: { ...defaultVideoDefaults, category: 'Science & Technology', defaultPlaylist: 'Tech Reviews', videoLocation: 'San Francisco' },
+  },
+  {
+    id: '5', name: 'FoodFlicks', niche: 'Food', tier: 'T3', youtubeChannelId: 'UCxFF7890qrst',
+    ixProfile: 'FF-Main', ixProfileId: 'IX-4825', ixStatus: 'closed',
+    proxy: '45.89.112.38:8080', dailyLimit: 2, videosToday: 1, todayViews: 156300, subscribers: 89400, uploadQueue: 2, status: 'active',
+    publishTimes: ['09:30', '15:30'], sheetUrl: 'https://docs.google.com/spreadsheets/d/5mno', videoFolder: '/media/foodflicks',
+    driveLongsFolderId: 'drive_ff_longs_001', driveShortsFolderId: 'drive_ff_shorts_001',
+    team: { managerName: 'Sara', editorName: 'Nadia Bashir', editorEmail: 'nadia@unitymediaflow.com', editorSalary: 1500, salaryCurrency: 'AED', salaryPayDate: 10 },
+    proxyDetails: { address: '45.89.112.38:8080', username: 'ff_user', password: '••••••', provider: 'Bright Data', type: 'mobile', buyDate: '2026-02-05', price: 20, expiryDate: '2026-03-30' },
+    shopping: { enabled: true, products: [{ name: 'Kitchen Knife Set', link: 'https://amzn.to/ff1' }], category: 'Kitchen Tools', amazonStoreId: 'unityfood-20', commissionRate: 5 },
+    videoDefaults: { ...defaultVideoDefaults, category: 'Howto & Style', defaultPlaylist: 'Quick Recipes' },
+  },
+  {
+    id: '6', name: 'LawBites', niche: 'Judge', tier: 'T4', youtubeChannelId: 'UCxLB1234uvwx',
+    ixProfile: 'LB-Main', ixProfileId: 'IX-4826', ixStatus: 'closed',
+    proxy: '45.89.112.39:8080', dailyLimit: 1, videosToday: 1, todayViews: 25933, subscribers: 312, uploadQueue: 1, status: 'paused',
+    publishTimes: ['14:00'], sheetUrl: 'https://docs.google.com/spreadsheets/d/6pqr', videoFolder: '/media/lawbites',
+    driveLongsFolderId: 'drive_lb_longs_001', driveShortsFolderId: 'drive_lb_shorts_001',
+    team: { managerName: 'Ahmed', editorName: 'Farhan Shah', editorEmail: 'farhan@unitymediaflow.com', editorSalary: 25000, salaryCurrency: 'PKR', salaryPayDate: 5 },
+    proxyDetails: { address: '45.89.112.39:8080', username: 'lb_user', password: '••••••', provider: 'DataImpulse', type: 'residential', buyDate: '2026-02-15', price: 10, expiryDate: '2026-04-15' },
+    shopping: { enabled: false, products: [], category: '', amazonStoreId: '', commissionRate: 0 },
+    videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Law Explained' },
+  },
 ];
 
-export const managerChannels = ['1', '2', '3']; // BenchDecoded, TrialTales, VerdictVault
+export const managerChannels = ['1', '2', '3'];
 
 export type VideoStatus = 'EDITING' | 'READY_TO_UPLOAD' | 'QUEUED' | 'UPLOADING' | 'UPLOADED_UNLISTED' | 'PUBLISHED' | 'ERROR';
 
@@ -45,29 +180,55 @@ export interface VideoItem {
   error: string;
   description: string;
   tags: string[];
+  videoType: 'Long' | 'Short';
+  folderName: string;
+  files: VideoFolderFile[];
+  titleB?: string;
+  thumbnailB?: boolean;
+  quiz?: string;
+}
+
+function mockFiles(type: 'Long' | 'Short', hasOptionals: boolean): VideoFolderFile[] {
+  const base: VideoFolderFile[] = [
+    { name: 'video.mp4', required: true, present: true, size: type === 'Long' ? '245 MB' : '32 MB' },
+    { name: 'title.txt', required: true, present: true, size: '0.1 KB' },
+    { name: 'description.txt', required: true, present: true, size: '1.2 KB' },
+    { name: 'tags.txt', required: true, present: true, size: '0.3 KB' },
+  ];
+  if (type === 'Long') {
+    base.push({ name: 'thumbnail.jpg', required: true, present: true, size: '180 KB' });
+    if (hasOptionals) {
+      base.push({ name: 'title_b.txt', required: false, present: true, size: '0.1 KB' });
+      base.push({ name: 'thumbnail_b.jpg', required: false, present: true, size: '175 KB' });
+      base.push({ name: 'quiz.txt', required: false, present: true, size: '0.4 KB' });
+    }
+  } else {
+    base.push({ name: 'thumbnail.jpg', required: false, present: hasOptionals, size: hasOptionals ? '120 KB' : undefined });
+  }
+  return base;
 }
 
 export const videoQueue: VideoItem[] = [
-  { id: 'v1', channel: 'BenchDecoded', channelId: '1', title: 'Judge Absolutely DESTROYS Entitled Karen in Court', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '09:00', tier: 'T1', uploadedAt: '2026-02-28 08:45', youtubeUrl: 'https://youtube.com/watch?v=abc1', error: '', description: 'A judge delivers justice to an entitled woman who refuses to follow court orders.', tags: ['judge', 'court', 'karen', 'justice'] },
-  { id: 'v2', channel: 'BenchDecoded', channelId: '1', title: 'Lawyer Gets CAUGHT Lying to the Judge', status: 'QUEUED', publishDate: '2026-02-28', publishTime: '15:00', tier: 'T1', uploadedAt: '', youtubeUrl: '', error: '', description: 'When a lawyer tries to deceive the judge, things go very wrong.', tags: ['lawyer', 'court', 'lying'] },
-  { id: 'v3', channel: 'BenchDecoded', channelId: '1', title: 'Most SAVAGE Judge Moments of 2026', status: 'EDITING', publishDate: '2026-03-01', publishTime: '09:00', tier: 'T1', uploadedAt: '', youtubeUrl: '', error: '', description: 'Compilation of the most intense courtroom moments.', tags: ['compilation', 'judge', 'savage'] },
-  { id: 'v4', channel: 'TrialTales', channelId: '2', title: 'Woman Sues Neighbor Over 2 Inches of Fence', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '10:00', tier: 'T2', uploadedAt: '2026-02-28 09:45', youtubeUrl: 'https://youtube.com/watch?v=def2', error: '', description: 'A heated dispute over property lines ends up in court.', tags: ['neighbor', 'fence', 'lawsuit'] },
-  { id: 'v5', channel: 'TrialTales', channelId: '2', title: 'Judge Judy vs The Most Annoying Plaintiff', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '16:00', tier: 'T2', uploadedAt: '2026-02-28 15:40', youtubeUrl: 'https://youtube.com/watch?v=ghi3', error: '', description: 'Judge handles the most difficult plaintiff ever seen in court.', tags: ['judge judy', 'plaintiff', 'annoying'] },
-  { id: 'v6', channel: 'TrialTales', channelId: '2', title: 'Man Refuses to Pay Child Support — Judge Reacts', status: 'ERROR', publishDate: '2026-02-27', publishTime: '10:00', tier: 'T2', uploadedAt: '2026-02-27 09:30', youtubeUrl: '', error: 'Upload timeout after 3 retries. IXBrowser session crashed.', description: 'A father faces consequences for refusing court-ordered payments.', tags: ['child support', 'court'] },
-  { id: 'v7', channel: 'VerdictVault', channelId: '3', title: 'Top 10 Courtroom Freakouts Caught on Camera', status: 'UPLOADING', publishDate: '2026-02-28', publishTime: '17:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'The most dramatic courtroom moments ever filmed.', tags: ['freakout', 'courtroom', 'top10'] },
-  { id: 'v8', channel: 'VerdictVault', channelId: '3', title: 'Criminal Tries to ESCAPE During Sentencing', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '11:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'Dramatic footage of a defendant attempting to flee the courtroom.', tags: ['escape', 'criminal', 'sentencing'] },
-  { id: 'v9', channel: 'TechVault', channelId: '4', title: 'I Tested the $5000 AI Laptop — Was It Worth It?', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '08:00', tier: 'T3', uploadedAt: '2026-02-28 07:45', youtubeUrl: 'https://youtube.com/watch?v=jkl4', error: '', description: 'Full review of the latest AI-focused laptop.', tags: ['laptop', 'AI', 'review', 'tech'] },
-  { id: 'v10', channel: 'TechVault', channelId: '4', title: 'Best Budget Phones 2026 — You Wont Believe #1', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '12:00', tier: 'T3', uploadedAt: '2026-02-28 11:45', youtubeUrl: 'https://youtube.com/watch?v=mno5', error: '', description: 'Our top picks for budget smartphones this year.', tags: ['phones', 'budget', '2026'] },
-  { id: 'v11', channel: 'TechVault', channelId: '4', title: 'This Gadget Changed My Life — $29 Only', status: 'UPLOADED_UNLISTED', publishDate: '2026-02-28', publishTime: '18:00', tier: 'T3', uploadedAt: '2026-02-28 17:30', youtubeUrl: 'https://youtube.com/watch?v=pqr6', error: '', description: 'An unboxing and review of a surprisingly useful gadget.', tags: ['gadget', 'unboxing', 'cheap'] },
-  { id: 'v12', channel: 'TechVault', channelId: '4', title: 'Apple vs Samsung 2026 — The TRUTH', status: 'QUEUED', publishDate: '2026-03-01', publishTime: '08:00', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'A deep comparison between the latest Apple and Samsung flagships.', tags: ['apple', 'samsung', 'comparison'] },
-  { id: 'v13', channel: 'FoodFlicks', channelId: '5', title: '5 Minute Meals That Actually Taste AMAZING', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '09:30', tier: 'T3', uploadedAt: '2026-02-28 09:15', youtubeUrl: 'https://youtube.com/watch?v=stu7', error: '', description: 'Quick and delicious meals anyone can make.', tags: ['cooking', 'quick meals', 'recipes'] },
-  { id: 'v14', channel: 'FoodFlicks', channelId: '5', title: 'Street Food in Tokyo — $1 vs $100', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '09:30', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'Exploring the extremes of Tokyo street food.', tags: ['tokyo', 'street food', 'challenge'] },
-  { id: 'v15', channel: 'LawBites', channelId: '6', title: 'Why This Murder Case SHOCKED Everyone', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '14:00', tier: 'T4', uploadedAt: '2026-02-28 13:45', youtubeUrl: 'https://youtube.com/watch?v=vwx8', error: '', description: 'An analysis of one of the most surprising murder cases.', tags: ['murder', 'case', 'shocking'] },
-  { id: 'v16', channel: 'LawBites', channelId: '6', title: 'Legal Myths That Could Get You ARRESTED', status: 'EDITING', publishDate: '2026-03-02', publishTime: '14:00', tier: 'T4', uploadedAt: '', youtubeUrl: '', error: '', description: 'Common legal misconceptions that people actually believe.', tags: ['legal', 'myths', 'arrested'] },
-  { id: 'v17', channel: 'BenchDecoded', channelId: '1', title: 'Judge Makes Grown Man CRY in Court', status: 'UPLOADED_UNLISTED', publishDate: '2026-03-01', publishTime: '15:00', tier: 'T1', uploadedAt: '2026-02-28 20:00', youtubeUrl: 'https://youtube.com/watch?v=yza9', error: '', description: 'Emotional courtroom moment when judge delivers a powerful message.', tags: ['emotional', 'judge', 'crying'] },
-  { id: 'v18', channel: 'VerdictVault', channelId: '3', title: 'Judge Catches Witness in a LIE — Epic Moment', status: 'QUEUED', publishDate: '2026-03-01', publishTime: '17:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'Incredible moment when a witness is caught lying under oath.', tags: ['witness', 'lie', 'perjury'] },
-  { id: 'v19', channel: 'FoodFlicks', channelId: '5', title: 'I Ate ONLY Gas Station Food for 24 Hours', status: 'EDITING', publishDate: '2026-03-03', publishTime: '15:30', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'A 24-hour challenge eating only from gas stations.', tags: ['challenge', 'gas station', 'food'] },
-  { id: 'v20', channel: 'TechVault', channelId: '4', title: 'Unboxing the RAREST Tech of 2026', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '12:00', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'Exclusive unboxing of extremely rare tech products.', tags: ['unboxing', 'rare', 'tech'] },
+  { id: 'v1', channel: 'BenchDecoded', channelId: '1', title: 'Judge Absolutely DESTROYS Entitled Karen in Court', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '09:00', tier: 'T1', uploadedAt: '2026-02-28 08:45', youtubeUrl: 'https://youtube.com/watch?v=abc1', error: '', description: 'A judge delivers justice to an entitled woman who refuses to follow court orders.', tags: ['judge', 'court', 'karen', 'justice'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', true), titleB: 'Karen Gets DESTROYED by Judge in Epic Court Moment', thumbnailB: true, quiz: 'Q: What is contempt of court?\nA: A type of dance\nA: A cooking method\nCORRECT: Disobeying a court order' },
+  { id: 'v2', channel: 'BenchDecoded', channelId: '1', title: 'Lawyer Gets CAUGHT Lying to the Judge', status: 'QUEUED', publishDate: '2026-02-28', publishTime: '15:00', tier: 'T1', uploadedAt: '', youtubeUrl: '', error: '', description: 'When a lawyer tries to deceive the judge, things go very wrong.', tags: ['lawyer', 'court', 'lying'], videoType: 'Long', folderName: 'video_002', files: mockFiles('Long', false) },
+  { id: 'v3', channel: 'BenchDecoded', channelId: '1', title: 'Most SAVAGE Judge Moments of 2026', status: 'EDITING', publishDate: '2026-03-01', publishTime: '09:00', tier: 'T1', uploadedAt: '', youtubeUrl: '', error: '', description: 'Compilation of the most intense courtroom moments.', tags: ['compilation', 'judge', 'savage'], videoType: 'Long', folderName: 'video_003', files: [{ name: 'video.mp4', required: true, present: false }, { name: 'title.txt', required: true, present: true, size: '0.1 KB' }, { name: 'description.txt', required: true, present: false }, { name: 'tags.txt', required: true, present: true, size: '0.3 KB' }, { name: 'thumbnail.jpg', required: true, present: false }] },
+  { id: 'v4', channel: 'TrialTales', channelId: '2', title: 'Woman Sues Neighbor Over 2 Inches of Fence', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '10:00', tier: 'T2', uploadedAt: '2026-02-28 09:45', youtubeUrl: 'https://youtube.com/watch?v=def2', error: '', description: 'A heated dispute over property lines ends up in court.', tags: ['neighbor', 'fence', 'lawsuit'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', false) },
+  { id: 'v5', channel: 'TrialTales', channelId: '2', title: 'Judge Judy vs The Most Annoying Plaintiff', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '16:00', tier: 'T2', uploadedAt: '2026-02-28 15:40', youtubeUrl: 'https://youtube.com/watch?v=ghi3', error: '', description: 'Judge handles the most difficult plaintiff ever seen in court.', tags: ['judge judy', 'plaintiff', 'annoying'], videoType: 'Short', folderName: 'short_001', files: mockFiles('Short', false) },
+  { id: 'v6', channel: 'TrialTales', channelId: '2', title: 'Man Refuses to Pay Child Support — Judge Reacts', status: 'ERROR', publishDate: '2026-02-27', publishTime: '10:00', tier: 'T2', uploadedAt: '2026-02-27 09:30', youtubeUrl: '', error: 'Upload timeout after 3 retries. IXBrowser session crashed.', description: 'A father faces consequences for refusing court-ordered payments.', tags: ['child support', 'court'], videoType: 'Long', folderName: 'video_002', files: mockFiles('Long', false) },
+  { id: 'v7', channel: 'VerdictVault', channelId: '3', title: 'Top 10 Courtroom Freakouts Caught on Camera', status: 'UPLOADING', publishDate: '2026-02-28', publishTime: '17:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'The most dramatic courtroom moments ever filmed.', tags: ['freakout', 'courtroom', 'top10'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', true), quiz: 'Q: What happens if you lie under oath?\nA: Nothing\nA: You get a medal\nCORRECT: You can be charged with perjury' },
+  { id: 'v8', channel: 'VerdictVault', channelId: '3', title: 'Criminal Tries to ESCAPE During Sentencing', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '11:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'Dramatic footage of a defendant attempting to flee the courtroom.', tags: ['escape', 'criminal', 'sentencing'], videoType: 'Long', folderName: 'video_002', files: mockFiles('Long', false) },
+  { id: 'v9', channel: 'TechVault', channelId: '4', title: 'I Tested the $5000 AI Laptop — Was It Worth It?', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '08:00', tier: 'T3', uploadedAt: '2026-02-28 07:45', youtubeUrl: 'https://youtube.com/watch?v=jkl4', error: '', description: 'Full review of the latest AI-focused laptop.', tags: ['laptop', 'AI', 'review', 'tech'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', false) },
+  { id: 'v10', channel: 'TechVault', channelId: '4', title: 'Best Budget Phones 2026 — You Wont Believe #1', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '12:00', tier: 'T3', uploadedAt: '2026-02-28 11:45', youtubeUrl: 'https://youtube.com/watch?v=mno5', error: '', description: 'Our top picks for budget smartphones this year.', tags: ['phones', 'budget', '2026'], videoType: 'Short', folderName: 'short_001', files: mockFiles('Short', true) },
+  { id: 'v11', channel: 'TechVault', channelId: '4', title: 'This Gadget Changed My Life — $29 Only', status: 'UPLOADED_UNLISTED', publishDate: '2026-02-28', publishTime: '18:00', tier: 'T3', uploadedAt: '2026-02-28 17:30', youtubeUrl: 'https://youtube.com/watch?v=pqr6', error: '', description: 'An unboxing and review of a surprisingly useful gadget.', tags: ['gadget', 'unboxing', 'cheap'], videoType: 'Long', folderName: 'video_002', files: mockFiles('Long', false) },
+  { id: 'v12', channel: 'TechVault', channelId: '4', title: 'Apple vs Samsung 2026 — The TRUTH', status: 'QUEUED', publishDate: '2026-03-01', publishTime: '08:00', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'A deep comparison between the latest Apple and Samsung flagships.', tags: ['apple', 'samsung', 'comparison'], videoType: 'Long', folderName: 'video_003', files: mockFiles('Long', false) },
+  { id: 'v13', channel: 'FoodFlicks', channelId: '5', title: '5 Minute Meals That Actually Taste AMAZING', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '09:30', tier: 'T3', uploadedAt: '2026-02-28 09:15', youtubeUrl: 'https://youtube.com/watch?v=stu7', error: '', description: 'Quick and delicious meals anyone can make.', tags: ['cooking', 'quick meals', 'recipes'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', false) },
+  { id: 'v14', channel: 'FoodFlicks', channelId: '5', title: 'Street Food in Tokyo — $1 vs $100', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '09:30', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'Exploring the extremes of Tokyo street food.', tags: ['tokyo', 'street food', 'challenge'], videoType: 'Short', folderName: 'short_001', files: mockFiles('Short', false) },
+  { id: 'v15', channel: 'LawBites', channelId: '6', title: 'Why This Murder Case SHOCKED Everyone', status: 'PUBLISHED', publishDate: '2026-02-28', publishTime: '14:00', tier: 'T4', uploadedAt: '2026-02-28 13:45', youtubeUrl: 'https://youtube.com/watch?v=vwx8', error: '', description: 'An analysis of one of the most surprising murder cases.', tags: ['murder', 'case', 'shocking'], videoType: 'Long', folderName: 'video_001', files: mockFiles('Long', false) },
+  { id: 'v16', channel: 'LawBites', channelId: '6', title: 'Legal Myths That Could Get You ARRESTED', status: 'EDITING', publishDate: '2026-03-02', publishTime: '14:00', tier: 'T4', uploadedAt: '', youtubeUrl: '', error: '', description: 'Common legal misconceptions that people actually believe.', tags: ['legal', 'myths', 'arrested'], videoType: 'Long', folderName: 'video_002', files: [{ name: 'video.mp4', required: true, present: false }, { name: 'title.txt', required: true, present: true, size: '0.1 KB' }, { name: 'description.txt', required: true, present: true, size: '0.8 KB' }, { name: 'tags.txt', required: true, present: false }, { name: 'thumbnail.jpg', required: true, present: false }] },
+  { id: 'v17', channel: 'BenchDecoded', channelId: '1', title: 'Judge Makes Grown Man CRY in Court', status: 'UPLOADED_UNLISTED', publishDate: '2026-03-01', publishTime: '15:00', tier: 'T1', uploadedAt: '2026-02-28 20:00', youtubeUrl: 'https://youtube.com/watch?v=yza9', error: '', description: 'Emotional courtroom moment when judge delivers a powerful message.', tags: ['emotional', 'judge', 'crying'], videoType: 'Long', folderName: 'video_004', files: mockFiles('Long', true), titleB: 'Grown Man CRIES After Judge Says This', thumbnailB: true },
+  { id: 'v18', channel: 'VerdictVault', channelId: '3', title: 'Judge Catches Witness in a LIE — Epic Moment', status: 'QUEUED', publishDate: '2026-03-01', publishTime: '17:00', tier: 'T2', uploadedAt: '', youtubeUrl: '', error: '', description: 'Incredible moment when a witness is caught lying under oath.', tags: ['witness', 'lie', 'perjury'], videoType: 'Short', folderName: 'short_001', files: mockFiles('Short', true) },
+  { id: 'v19', channel: 'FoodFlicks', channelId: '5', title: 'I Ate ONLY Gas Station Food for 24 Hours', status: 'EDITING', publishDate: '2026-03-03', publishTime: '15:30', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'A 24-hour challenge eating only from gas stations.', tags: ['challenge', 'gas station', 'food'], videoType: 'Long', folderName: 'video_002', files: [{ name: 'video.mp4', required: true, present: true, size: '310 MB' }, { name: 'title.txt', required: true, present: true, size: '0.1 KB' }, { name: 'description.txt', required: true, present: false }, { name: 'tags.txt', required: true, present: true, size: '0.2 KB' }, { name: 'thumbnail.jpg', required: true, present: false }] },
+  { id: 'v20', channel: 'TechVault', channelId: '4', title: 'Unboxing the RAREST Tech of 2026', status: 'READY_TO_UPLOAD', publishDate: '2026-03-01', publishTime: '12:00', tier: 'T3', uploadedAt: '', youtubeUrl: '', error: '', description: 'Exclusive unboxing of extremely rare tech products.', tags: ['unboxing', 'rare', 'tech'], videoType: 'Long', folderName: 'video_004', files: mockFiles('Long', false) },
 ];
 
 export const activityFeed = [
@@ -205,3 +366,135 @@ export const channelColors: Record<string, string> = {
   FoodFlicks: '#EC4899',
   LawBites: '#B8860B',
 };
+
+// ═══ CXO FINANCE DATA ═══
+
+export interface MonthlyRevenue {
+  channelId: string;
+  channelName: string;
+  month: string;
+  revenue: number;
+  views: number;
+  subsGained: number;
+  videosPublished: number;
+}
+
+export interface SalaryPayment {
+  channelId: string;
+  editorName: string;
+  amount: number;
+  currency: string;
+  month: string;
+  payDate: number;
+  paid: boolean;
+}
+
+export interface ProxyCost {
+  channelId: string;
+  channelName: string;
+  provider: string;
+  amount: number;
+  buyDate: string;
+  expiryDate: string;
+  daysLeft: number;
+}
+
+export interface ShoppingEvent {
+  channelId: string;
+  channelName: string;
+  videoFolder: string;
+  productName: string;
+  productLink: string;
+  addedAt: string;
+  estimatedCommission: number;
+}
+
+export interface MonthlySummary {
+  month: string;
+  totalRevenue: number;
+  totalSalaryCost: number;
+  totalProxyCost: number;
+  grossProfit: number;
+  marginPct: number;
+  videosProduced: number;
+  topChannel: string;
+}
+
+export const monthlyRevenueData: MonthlyRevenue[] = [
+  { channelId: '1', channelName: 'BenchDecoded', month: '2026-02', revenue: 3420, views: 4200000, subsGained: 4200, videosPublished: 42 },
+  { channelId: '2', channelName: 'TrialTales', month: '2026-02', revenue: 890, views: 1800000, subsGained: 680, videosPublished: 38 },
+  { channelId: '3', channelName: 'VerdictVault', month: '2026-02', revenue: 2150, views: 2600000, subsGained: 2100, videosPublished: 35 },
+  { channelId: '4', channelName: 'TechVault', month: '2026-02', revenue: 4280, views: 6800000, subsGained: 5400, videosPublished: 56 },
+  { channelId: '5', channelName: 'FoodFlicks', month: '2026-02', revenue: 1780, views: 3400000, subsGained: 2800, videosPublished: 40 },
+  { channelId: '6', channelName: 'LawBites', month: '2026-02', revenue: 327, views: 620000, subsGained: 210, videosPublished: 22 },
+  { channelId: '1', channelName: 'BenchDecoded', month: '2026-01', revenue: 3100, views: 3800000, subsGained: 3800, videosPublished: 40 },
+  { channelId: '4', channelName: 'TechVault', month: '2026-01', revenue: 3950, views: 6200000, subsGained: 4800, videosPublished: 52 },
+  { channelId: '3', channelName: 'VerdictVault', month: '2026-01', revenue: 1950, views: 2300000, subsGained: 1800, videosPublished: 32 },
+  { channelId: '5', channelName: 'FoodFlicks', month: '2026-01', revenue: 1540, views: 2900000, subsGained: 2400, videosPublished: 36 },
+  { channelId: '2', channelName: 'TrialTales', month: '2026-01', revenue: 420, views: 900000, subsGained: 320, videosPublished: 30 },
+  { channelId: '6', channelName: 'LawBites', month: '2026-01', revenue: 240, views: 420000, subsGained: 120, videosPublished: 18 },
+];
+
+export const salaryPayments: SalaryPayment[] = [
+  { channelId: '1', editorName: 'Ali Raza', amount: 400, currency: 'USD', month: '2026-02', payDate: 1, paid: true },
+  { channelId: '2', editorName: 'Usman Khan', amount: 35000, currency: 'PKR', month: '2026-02', payDate: 5, paid: true },
+  { channelId: '3', editorName: 'Hamza Malik', amount: 350, currency: 'USD', month: '2026-02', payDate: 1, paid: true },
+  { channelId: '4', editorName: 'Zain Ahmed', amount: 500, currency: 'USD', month: '2026-02', payDate: 1, paid: true },
+  { channelId: '5', editorName: 'Nadia Bashir', amount: 1500, currency: 'AED', month: '2026-02', payDate: 10, paid: false },
+  { channelId: '6', editorName: 'Farhan Shah', amount: 25000, currency: 'PKR', month: '2026-02', payDate: 5, paid: true },
+];
+
+export const proxyCosts: ProxyCost[] = [
+  { channelId: '1', channelName: 'BenchDecoded', provider: 'Bright Data', amount: 20, buyDate: '2026-01-15', expiryDate: '2026-03-05', daysLeft: 4 },
+  { channelId: '2', channelName: 'TrialTales', provider: 'DataImpulse', amount: 15, buyDate: '2026-01-20', expiryDate: '2026-04-12', daysLeft: 42 },
+  { channelId: '3', channelName: 'VerdictVault', provider: 'Bright Data', amount: 20, buyDate: '2026-02-01', expiryDate: '2026-03-28', daysLeft: 27 },
+  { channelId: '4', channelName: 'TechVault', provider: 'DataImpulse', amount: 15, buyDate: '2026-01-10', expiryDate: '2026-04-05', daysLeft: 35 },
+  { channelId: '5', channelName: 'FoodFlicks', provider: 'Bright Data', amount: 20, buyDate: '2026-02-05', expiryDate: '2026-03-30', daysLeft: 29 },
+  { channelId: '6', channelName: 'LawBites', provider: 'DataImpulse', amount: 10, buyDate: '2026-02-15', expiryDate: '2026-04-15', daysLeft: 45 },
+];
+
+export const shoppingEvents: ShoppingEvent[] = [
+  { channelId: '1', channelName: 'BenchDecoded', videoFolder: 'video_001', productName: 'Legal Rights Handbook', productLink: 'https://amzn.to/abc1', addedAt: '2026-02-28 08:45', estimatedCommission: 2.40 },
+  { channelId: '1', channelName: 'BenchDecoded', videoFolder: 'video_004', productName: 'Home Security Camera', productLink: 'https://amzn.to/abc2', addedAt: '2026-02-28 20:00', estimatedCommission: 4.80 },
+  { channelId: '3', channelName: 'VerdictVault', videoFolder: 'video_001', productName: 'Courtroom Drama Book', productLink: 'https://amzn.to/vv1', addedAt: '2026-02-27 11:00', estimatedCommission: 1.96 },
+  { channelId: '4', channelName: 'TechVault', videoFolder: 'video_001', productName: 'USB-C Hub', productLink: 'https://amzn.to/tv1', addedAt: '2026-02-28 07:45', estimatedCommission: 1.80 },
+  { channelId: '4', channelName: 'TechVault', videoFolder: 'video_002', productName: 'Wireless Mouse', productLink: 'https://amzn.to/tv2', addedAt: '2026-02-28 17:30', estimatedCommission: 1.50 },
+  { channelId: '4', channelName: 'TechVault', videoFolder: 'video_003', productName: 'Monitor Light', productLink: 'https://amzn.to/tv3', addedAt: '2026-02-27 08:00', estimatedCommission: 2.10 },
+  { channelId: '5', channelName: 'FoodFlicks', videoFolder: 'video_001', productName: 'Kitchen Knife Set', productLink: 'https://amzn.to/ff1', addedAt: '2026-02-28 09:15', estimatedCommission: 3.25 },
+];
+
+export const monthlySummaries: MonthlySummary[] = [
+  { month: '2026-02', totalRevenue: 12847, totalSalaryCost: 1650, totalProxyCost: 100, grossProfit: 11097, marginPct: 86.4, videosProduced: 233, topChannel: 'TechVault' },
+  { month: '2026-01', totalRevenue: 11200, totalSalaryCost: 1650, totalProxyCost: 100, grossProfit: 9450, marginPct: 84.4, videosProduced: 208, topChannel: 'TechVault' },
+  { month: '2025-12', totalRevenue: 10500, totalSalaryCost: 1500, totalProxyCost: 90, grossProfit: 8910, marginPct: 84.9, videosProduced: 195, topChannel: 'TechVault' },
+  { month: '2025-11', totalRevenue: 9100, totalSalaryCost: 1500, totalProxyCost: 90, grossProfit: 7510, marginPct: 82.5, videosProduced: 178, topChannel: 'BenchDecoded' },
+  { month: '2025-10', totalRevenue: 7800, totalSalaryCost: 1350, totalProxyCost: 80, grossProfit: 6370, marginPct: 81.7, videosProduced: 156, topChannel: 'BenchDecoded' },
+  { month: '2025-09', totalRevenue: 6200, totalSalaryCost: 1200, totalProxyCost: 70, grossProfit: 4930, marginPct: 79.5, videosProduced: 134, topChannel: 'BenchDecoded' },
+];
+
+export const ytdSummary = {
+  totalRevenue: 57647,
+  totalCosts: 10280,
+  totalProfit: 47367,
+  totalVideos: 1104,
+  channelsActive: 6,
+  avgRevenuePerVideo: 52.22,
+  growthPct: 18.4,
+};
+
+export const productionReport = channels.map(ch => ({
+  channelId: ch.id,
+  channelName: ch.name,
+  longsThisWeek: Math.floor(Math.random() * 8) + 3,
+  shortsThisWeek: Math.floor(Math.random() * 5) + 1,
+  longsThisMonth: Math.floor(Math.random() * 20) + 15,
+  shortsThisMonth: Math.floor(Math.random() * 15) + 5,
+  editorName: ch.team.editorName,
+  editorOutput: Math.floor(Math.random() * 10) + 8,
+}));
+
+export const youtubeCategories = [
+  'Entertainment', 'Education', 'Science & Technology', 'Howto & Style', 'News & Politics',
+  'People & Blogs', 'Comedy', 'Film & Animation', 'Music', 'Sports', 'Gaming',
+  'Autos & Vehicles', 'Pets & Animals', 'Travel & Events',
+];
