@@ -498,3 +498,186 @@ export const youtubeCategories = [
   'People & Blogs', 'Comedy', 'Film & Animation', 'Music', 'Sports', 'Gaming',
   'Autos & Vehicles', 'Pets & Animals', 'Travel & Events',
 ];
+
+// ═══ FINANCE MODULE DATA ═══
+
+export interface Partner {
+  id: string;
+  name: string;
+  title: string;
+  equityPercent: number;
+  role: string;
+}
+
+export const partners: Partner[] = [
+  { id: 'p1', name: 'Mohsin', title: 'Founder & CEO', equityPercent: 40, role: 'Overall company strategy, growth, key decisions, partnerships' },
+  { id: 'p2', name: 'Mudassir', title: 'Partner & CFO', equityPercent: 40, role: 'Finance ownership: budgeting, expense controls, reporting, profitability' },
+  { id: 'p3', name: 'Haseeb', title: 'Head of Production', equityPercent: 10, role: 'Manages editors team, workflow, delivery, quality control' },
+  { id: 'p4', name: 'Waleed', title: 'Head of Strategy & Research', equityPercent: 10, role: 'Research, channel strategy, optimization frameworks, content systems' },
+];
+
+export interface ChannelPartnership {
+  id: string;
+  channelId: string;
+  channelName: string;
+  partnerId: string;
+  partnerName: string;
+  partnerSharePercent: number;
+  companySharePercent: number;
+  startMonth: string;
+  endMonth: string | null;
+}
+
+export const channelPartnerships: ChannelPartnership[] = [
+  { id: 'cp1', channelId: '1', channelName: 'BenchDecoded', partnerId: 'p1', partnerName: 'Mohsin', partnerSharePercent: 0, companySharePercent: 100, startMonth: '2025-06', endMonth: null },
+  { id: 'cp2', channelId: '2', channelName: 'TrialTales', partnerId: 'p1', partnerName: 'Mohsin', partnerSharePercent: 0, companySharePercent: 100, startMonth: '2025-08', endMonth: null },
+  { id: 'cp3', channelId: '3', channelName: 'VerdictVault', partnerId: 'p4', partnerName: 'Waleed', partnerSharePercent: 80, companySharePercent: 20, startMonth: '2025-09', endMonth: null },
+  { id: 'cp4', channelId: '4', channelName: 'TechVault', partnerId: 'p1', partnerName: 'Mohsin', partnerSharePercent: 0, companySharePercent: 100, startMonth: '2025-07', endMonth: null },
+  { id: 'cp5', channelId: '5', channelName: 'FoodFlicks', partnerId: 'p3', partnerName: 'Haseeb', partnerSharePercent: 70, companySharePercent: 30, startMonth: '2025-10', endMonth: null },
+  { id: 'cp6', channelId: '6', channelName: 'LawBites', partnerId: 'p1', partnerName: 'Mohsin', partnerSharePercent: 0, companySharePercent: 100, startMonth: '2025-11', endMonth: null },
+];
+
+export type ExpenseCategory = 'EDITOR_SALARY' | 'TOOLS_SUBSCRIPTIONS' | 'PROXIES' | 'CAPCUT' | 'AI_TOOLS' | 'CONTRACTORS' | 'OPERATIONS' | 'MISC';
+export type ExpenseType = 'OVERHEAD' | 'CHANNEL_DIRECT' | 'SHARED' | 'DERIVED';
+export type RevenueSource = 'ADSENSE' | 'SPONSORSHIP' | 'AFFILIATE' | 'OTHER';
+
+export interface ExpenseEntry {
+  id: string;
+  month: string;
+  amount: number;
+  category: ExpenseCategory;
+  expenseType: ExpenseType;
+  channelId: string | null;
+  channelName: string | null;
+  vendor: string;
+  notes: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface RevenueEntry {
+  id: string;
+  channelId: string;
+  channelName: string;
+  month: string;
+  amount: number;
+  source: RevenueSource;
+  notes: string;
+}
+
+export interface BudgetEntry {
+  id: string;
+  month: string;
+  category: ExpenseCategory | 'TOTAL';
+  budgetAmount: number;
+  actualAmount: number;
+}
+
+export interface EditorAllocation {
+  editorName: string;
+  month: string;
+  channelId: string;
+  channelName: string;
+  allocationPercent: number;
+  allocatedAmount: number;
+}
+
+export interface MonthStatus {
+  month: string;
+  isClosed: boolean;
+  closedBy: string | null;
+  closedAt: string | null;
+}
+
+export const expenseEntries: ExpenseEntry[] = [
+  { id: 'e1', month: '2026-02', amount: 400, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '1', channelName: 'BenchDecoded', vendor: 'Ali Raza', notes: 'Editor salary', createdBy: 'Mudassir', createdAt: '2026-02-01' },
+  { id: 'e2', month: '2026-02', amount: 125, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '2', channelName: 'TrialTales', vendor: 'Usman Khan', notes: 'Editor salary (35000 PKR)', createdBy: 'Mudassir', createdAt: '2026-02-05' },
+  { id: 'e3', month: '2026-02', amount: 350, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '3', channelName: 'VerdictVault', vendor: 'Hamza Malik', notes: 'Editor salary', createdBy: 'Mudassir', createdAt: '2026-02-01' },
+  { id: 'e4', month: '2026-02', amount: 500, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '4', channelName: 'TechVault', vendor: 'Zain Ahmed', notes: 'Editor salary', createdBy: 'Mudassir', createdAt: '2026-02-01' },
+  { id: 'e5', month: '2026-02', amount: 408, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '5', channelName: 'FoodFlicks', vendor: 'Nadia Bashir', notes: 'Editor salary (1500 AED)', createdBy: 'Mudassir', createdAt: '2026-02-10' },
+  { id: 'e6', month: '2026-02', amount: 89, category: 'EDITOR_SALARY', expenseType: 'CHANNEL_DIRECT', channelId: '6', channelName: 'LawBites', vendor: 'Farhan Shah', notes: 'Editor salary (25000 PKR)', createdBy: 'Mudassir', createdAt: '2026-02-05' },
+  { id: 'e7', month: '2026-02', amount: 49, category: 'TOOLS_SUBSCRIPTIONS', expenseType: 'OVERHEAD', channelId: null, channelName: null, vendor: 'IXBrowser', notes: 'Browser automation tool', createdBy: 'Mudassir', createdAt: '2026-02-15' },
+  { id: 'e8', month: '2026-02', amount: 120, category: 'AI_TOOLS', expenseType: 'OVERHEAD', channelId: null, channelName: null, vendor: 'Anthropic', notes: 'Claude API', createdBy: 'Mudassir', createdAt: '2026-02-01' },
+  { id: 'e9', month: '2026-02', amount: 35, category: 'OPERATIONS', expenseType: 'OVERHEAD', channelId: null, channelName: null, vendor: 'Contabo', notes: 'VPS hosting', createdBy: 'Mudassir', createdAt: '2026-02-20' },
+  { id: 'e10', month: '2026-02', amount: 30, category: 'OPERATIONS', expenseType: 'OVERHEAD', channelId: null, channelName: null, vendor: 'WhatsApp API', notes: 'Notification service', createdBy: 'Mudassir', createdAt: '2026-02-05' },
+  { id: 'e11', month: '2026-02', amount: 20, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '1', channelName: 'BenchDecoded', vendor: 'Bright Data', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e12', month: '2026-02', amount: 15, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '2', channelName: 'TrialTales', vendor: 'DataImpulse', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e13', month: '2026-02', amount: 20, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '3', channelName: 'VerdictVault', vendor: 'Bright Data', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e14', month: '2026-02', amount: 15, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '4', channelName: 'TechVault', vendor: 'DataImpulse', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e15', month: '2026-02', amount: 20, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '5', channelName: 'FoodFlicks', vendor: 'Bright Data', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e16', month: '2026-02', amount: 10, category: 'PROXIES', expenseType: 'CHANNEL_DIRECT', channelId: '6', channelName: 'LawBites', vendor: 'DataImpulse', notes: 'Proxy cost', createdBy: 'System', createdAt: '2026-02-01' },
+  { id: 'e17', month: '2026-02', amount: 15, category: 'CAPCUT', expenseType: 'SHARED', channelId: null, channelName: null, vendor: 'CapCut', notes: 'Editing tool — shared across editors', createdBy: 'Mudassir', createdAt: '2026-02-01' },
+  { id: 'e18', month: '2026-02', amount: 25, category: 'MISC', expenseType: 'OVERHEAD', channelId: null, channelName: null, vendor: 'Miscellaneous', notes: 'Domain renewals + small tools', createdBy: 'Mudassir', createdAt: '2026-02-10' },
+];
+
+export const revenueEntries: RevenueEntry[] = [
+  { id: 'r1', channelId: '1', channelName: 'BenchDecoded', month: '2026-02', amount: 2890, source: 'ADSENSE', notes: 'YouTube ad revenue' },
+  { id: 'r2', channelId: '1', channelName: 'BenchDecoded', month: '2026-02', amount: 350, source: 'AFFILIATE', notes: 'Amazon affiliates' },
+  { id: 'r3', channelId: '1', channelName: 'BenchDecoded', month: '2026-02', amount: 180, source: 'SPONSORSHIP', notes: 'LegalZoom sponsorship' },
+  { id: 'r4', channelId: '2', channelName: 'TrialTales', month: '2026-02', amount: 750, source: 'ADSENSE', notes: '' },
+  { id: 'r5', channelId: '2', channelName: 'TrialTales', month: '2026-02', amount: 140, source: 'AFFILIATE', notes: '' },
+  { id: 'r6', channelId: '3', channelName: 'VerdictVault', month: '2026-02', amount: 1820, source: 'ADSENSE', notes: '' },
+  { id: 'r7', channelId: '3', channelName: 'VerdictVault', month: '2026-02', amount: 330, source: 'AFFILIATE', notes: '' },
+  { id: 'r8', channelId: '4', channelName: 'TechVault', month: '2026-02', amount: 3200, source: 'ADSENSE', notes: '' },
+  { id: 'r9', channelId: '4', channelName: 'TechVault', month: '2026-02', amount: 680, source: 'AFFILIATE', notes: '' },
+  { id: 'r10', channelId: '4', channelName: 'TechVault', month: '2026-02', amount: 400, source: 'SPONSORSHIP', notes: 'TechBuddy promo' },
+  { id: 'r11', channelId: '5', channelName: 'FoodFlicks', month: '2026-02', amount: 1480, source: 'ADSENSE', notes: '' },
+  { id: 'r12', channelId: '5', channelName: 'FoodFlicks', month: '2026-02', amount: 300, source: 'AFFILIATE', notes: '' },
+  { id: 'r13', channelId: '6', channelName: 'LawBites', month: '2026-02', amount: 297, source: 'ADSENSE', notes: '' },
+  { id: 'r14', channelId: '6', channelName: 'LawBites', month: '2026-02', amount: 30, source: 'OTHER', notes: 'Super Thanks' },
+  // January data
+  { id: 'r15', channelId: '1', channelName: 'BenchDecoded', month: '2026-01', amount: 2650, source: 'ADSENSE', notes: '' },
+  { id: 'r16', channelId: '1', channelName: 'BenchDecoded', month: '2026-01', amount: 280, source: 'AFFILIATE', notes: '' },
+  { id: 'r17', channelId: '2', channelName: 'TrialTales', month: '2026-01', amount: 380, source: 'ADSENSE', notes: '' },
+  { id: 'r18', channelId: '3', channelName: 'VerdictVault', month: '2026-01', amount: 1650, source: 'ADSENSE', notes: '' },
+  { id: 'r19', channelId: '3', channelName: 'VerdictVault', month: '2026-01', amount: 300, source: 'AFFILIATE', notes: '' },
+  { id: 'r20', channelId: '4', channelName: 'TechVault', month: '2026-01', amount: 3100, source: 'ADSENSE', notes: '' },
+  { id: 'r21', channelId: '4', channelName: 'TechVault', month: '2026-01', amount: 850, source: 'AFFILIATE', notes: '' },
+  { id: 'r22', channelId: '5', channelName: 'FoodFlicks', month: '2026-01', amount: 1340, source: 'ADSENSE', notes: '' },
+  { id: 'r23', channelId: '5', channelName: 'FoodFlicks', month: '2026-01', amount: 200, source: 'AFFILIATE', notes: '' },
+  { id: 'r24', channelId: '6', channelName: 'LawBites', month: '2026-01', amount: 210, source: 'ADSENSE', notes: '' },
+];
+
+export const budgetEntries: BudgetEntry[] = [
+  { id: 'b1', month: '2026-02', category: 'EDITOR_SALARY', budgetAmount: 2000, actualAmount: 1872 },
+  { id: 'b2', month: '2026-02', category: 'TOOLS_SUBSCRIPTIONS', budgetAmount: 200, actualAmount: 184 },
+  { id: 'b3', month: '2026-02', category: 'PROXIES', budgetAmount: 120, actualAmount: 100 },
+  { id: 'b4', month: '2026-02', category: 'AI_TOOLS', budgetAmount: 150, actualAmount: 120 },
+  { id: 'b5', month: '2026-02', category: 'OPERATIONS', budgetAmount: 100, actualAmount: 65 },
+  { id: 'b6', month: '2026-02', category: 'CAPCUT', budgetAmount: 20, actualAmount: 15 },
+  { id: 'b7', month: '2026-02', category: 'MISC', budgetAmount: 50, actualAmount: 25 },
+  { id: 'b8', month: '2026-02', category: 'TOTAL', budgetAmount: 2640, actualAmount: 2381 },
+];
+
+export const editorAllocations: EditorAllocation[] = [
+  { editorName: 'Ali Raza', month: '2026-02', channelId: '1', channelName: 'BenchDecoded', allocationPercent: 100, allocatedAmount: 400 },
+  { editorName: 'Usman Khan', month: '2026-02', channelId: '2', channelName: 'TrialTales', allocationPercent: 100, allocatedAmount: 125 },
+  { editorName: 'Hamza Malik', month: '2026-02', channelId: '3', channelName: 'VerdictVault', allocationPercent: 100, allocatedAmount: 350 },
+  { editorName: 'Zain Ahmed', month: '2026-02', channelId: '4', channelName: 'TechVault', allocationPercent: 100, allocatedAmount: 500 },
+  { editorName: 'Nadia Bashir', month: '2026-02', channelId: '5', channelName: 'FoodFlicks', allocationPercent: 100, allocatedAmount: 408 },
+  { editorName: 'Farhan Shah', month: '2026-02', channelId: '6', channelName: 'LawBites', allocationPercent: 100, allocatedAmount: 89 },
+];
+
+export const monthStatuses: MonthStatus[] = [
+  { month: '2026-02', isClosed: false, closedBy: null, closedAt: null },
+  { month: '2026-01', isClosed: true, closedBy: 'Mudassir', closedAt: '2026-02-03 10:00' },
+  { month: '2025-12', isClosed: true, closedBy: 'Mudassir', closedAt: '2026-01-05 09:30' },
+];
+
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+  EDITOR_SALARY: 'Editor Salaries',
+  TOOLS_SUBSCRIPTIONS: 'Tools & Subscriptions',
+  PROXIES: 'Proxies',
+  CAPCUT: 'CapCut',
+  AI_TOOLS: 'AI Tools',
+  CONTRACTORS: 'Contractors',
+  OPERATIONS: 'Operations',
+  MISC: 'Miscellaneous',
+};
+
+export const REVENUE_SOURCE_LABELS: Record<RevenueSource, string> = {
+  ADSENSE: 'YouTube AdSense',
+  SPONSORSHIP: 'Sponsorship',
+  AFFILIATE: 'Affiliate',
+  OTHER: 'Other',
+};
