@@ -34,7 +34,7 @@ export default function Team() {
               </div>
             </div>
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between"><span className="text-muted-foreground">Equity</span><span className="font-bold text-primary">{p.equity}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Equity</span><span className="font-bold text-primary">{p.equityPercent}%</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">This Month</span><span className="font-bold text-success">${p.allTimeEarnings > 0 ? Math.floor(p.allTimeEarnings / 12) : 0}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">All-Time</span><span className="font-semibold">${p.allTimeEarnings.toLocaleString()}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Last Login</span><span>{p.lastLogin}</span></div>

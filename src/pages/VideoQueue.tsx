@@ -9,7 +9,8 @@ import { Progress } from '@/components/ui/progress';
 function StatusBadge({ status }: { status: VideoStatus }) {
   const cls: Record<VideoStatus, string> = {
     EDITING: 'pill-editing', READY_TO_UPLOAD: 'pill-ready', QUEUED: 'pill-queued',
-    UPLOADING: 'pill-uploading', UPLOADED_UNLISTED: 'pill-unlisted', PUBLISHED: 'pill-published', ERROR: 'pill-error'
+    UPLOADING: 'pill-uploading', UPLOADED_UNLISTED: 'pill-unlisted', PUBLISHED: 'pill-published', ERROR: 'pill-error',
+    DETECTED: 'pill-editing', DOWNLOADING: 'pill-ready', UNLISTED: 'pill-unlisted', SCHEDULED: 'pill-queued'
   };
   return (
     <span className={cls[status]}>

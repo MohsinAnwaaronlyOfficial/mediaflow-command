@@ -73,7 +73,7 @@ export interface Channel {
   todayViews: number;
   subscribers: number;
   uploadQueue: number;
-  status: 'active' | 'paused' | 'error';
+  status: 'active' | 'paused' | 'error' | 'inactive' | 'setup_required';
   publishTimes: string[];
   sheetUrl: string;
   videoFolder: string;
@@ -83,6 +83,22 @@ export interface Channel {
   proxyDetails: ChannelProxy;
   shopping: ChannelShopping;
   videoDefaults: VideoDefaults;
+  // Health fields
+  youtubeLogin: boolean;
+  gmailLogin: boolean;
+  proxyHealth: boolean;
+  proxyLatency: number;
+  driveAccess: boolean;
+  sheetAccess: boolean;
+  ixBrowserProfile: boolean;
+  lastHealthCheck: string;
+  // Stats fields
+  monthRevenue: number;
+  monthViews: number;
+  totalPublished: number;
+  longFormPerDay: number;
+  shortsPerDay: number;
+  lastVideoTime: string;
 }
 
 const defaultVideoDefaults: VideoDefaults = {
@@ -104,6 +120,8 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.34:8080', username: 'bd_user', password: '••••••', provider: 'Bright Data', type: 'residential', buyDate: '2026-01-15', price: 20, expiryDate: '2026-03-05' },
     shopping: { enabled: true, products: [{ name: 'Legal Rights Handbook', link: 'https://amzn.to/abc1' }, { name: 'Home Security Camera', link: 'https://amzn.to/abc2' }], category: 'Legal Books', amazonStoreId: 'unitystore-20', commissionRate: 8 },
     videoDefaults: { ...defaultVideoDefaults, abTesting: true, defaultPlaylist: 'Judge Compilations', videoLocation: 'New York' },
+    youtubeLogin: true, gmailLogin: true, proxyHealth: true, proxyLatency: 45, driveAccess: true, sheetAccess: true, ixBrowserProfile: true, lastHealthCheck: '5 min ago',
+    monthRevenue: 320, monthViews: 187420, totalPublished: 47, longFormPerDay: 1, shortsPerDay: 3, lastVideoTime: '2h ago',
   },
   {
     id: '2', name: 'TrialTales', niche: 'Judge', tier: 'T2', youtubeChannelId: 'UCxTT5678efgh',
@@ -115,6 +133,8 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.35:8080', username: 'tt_user', password: '••••••', provider: 'DataImpulse', type: 'residential', buyDate: '2026-01-20', price: 15, expiryDate: '2026-04-12' },
     shopping: { enabled: false, products: [], category: '', amazonStoreId: '', commissionRate: 0 },
     videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Court Stories' },
+    youtubeLogin: true, gmailLogin: true, proxyHealth: true, proxyLatency: 62, driveAccess: true, sheetAccess: true, ixBrowserProfile: true, lastHealthCheck: '5 min ago',
+    monthRevenue: 280, monthViews: 134200, totalPublished: 32, longFormPerDay: 1, shortsPerDay: 2, lastVideoTime: '1h ago',
   },
   {
     id: '3', name: 'VerdictVault', niche: 'Judge', tier: 'T2', youtubeChannelId: 'UCxVV9012ijkl',
@@ -126,6 +146,8 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.36:8080', username: 'vv_user', password: '••••••', provider: 'Bright Data', type: 'datacenter', buyDate: '2026-02-01', price: 20, expiryDate: '2026-03-28' },
     shopping: { enabled: true, products: [{ name: 'Courtroom Drama Book', link: 'https://amzn.to/vv1' }], category: 'Legal Books', amazonStoreId: 'unitystore-20', commissionRate: 7 },
     videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Verdict Videos' },
+    youtubeLogin: true, gmailLogin: true, proxyHealth: true, proxyLatency: 38, driveAccess: true, sheetAccess: true, ixBrowserProfile: true, lastHealthCheck: '5 min ago',
+    monthRevenue: 210, monthViews: 98340, totalPublished: 28, longFormPerDay: 1, shortsPerDay: 2, lastVideoTime: '3h ago',
   },
   {
     id: '4', name: 'TechVault', niche: 'Tech', tier: 'T3', youtubeChannelId: 'UCxTV3456mnop',
@@ -137,6 +159,8 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.37:8080', username: 'tv_user', password: '••••••', provider: 'DataImpulse', type: 'datacenter', buyDate: '2026-01-10', price: 15, expiryDate: '2026-04-05' },
     shopping: { enabled: true, products: [{ name: 'USB-C Hub', link: 'https://amzn.to/tv1' }, { name: 'Wireless Mouse', link: 'https://amzn.to/tv2' }, { name: 'Monitor Light', link: 'https://amzn.to/tv3' }], category: 'Tech Gadgets', amazonStoreId: 'unitytech-20', commissionRate: 6 },
     videoDefaults: { ...defaultVideoDefaults, category: 'Science & Technology', defaultPlaylist: 'Tech Reviews', videoLocation: 'San Francisco' },
+    youtubeLogin: true, gmailLogin: true, proxyHealth: true, proxyLatency: 55, driveAccess: true, sheetAccess: true, ixBrowserProfile: true, lastHealthCheck: '8 min ago',
+    monthRevenue: 480, monthViews: 245100, totalPublished: 52, longFormPerDay: 2, shortsPerDay: 3, lastVideoTime: '30 min ago',
   },
   {
     id: '5', name: 'FoodFlicks', niche: 'Food', tier: 'T3', youtubeChannelId: 'UCxFF7890qrst',
@@ -148,6 +172,8 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.38:8080', username: 'ff_user', password: '••••••', provider: 'Bright Data', type: 'mobile', buyDate: '2026-02-05', price: 20, expiryDate: '2026-03-30' },
     shopping: { enabled: true, products: [{ name: 'Kitchen Knife Set', link: 'https://amzn.to/ff1' }], category: 'Kitchen Tools', amazonStoreId: 'unityfood-20', commissionRate: 5 },
     videoDefaults: { ...defaultVideoDefaults, category: 'Howto & Style', defaultPlaylist: 'Quick Recipes' },
+    youtubeLogin: true, gmailLogin: true, proxyHealth: true, proxyLatency: 78, driveAccess: true, sheetAccess: true, ixBrowserProfile: true, lastHealthCheck: '10 min ago',
+    monthRevenue: 180, monthViews: 156300, totalPublished: 35, longFormPerDay: 1, shortsPerDay: 2, lastVideoTime: '1h ago',
   },
   {
     id: '6', name: 'LawBites', niche: 'Judge', tier: 'T4', youtubeChannelId: 'UCxLB1234uvwx',
@@ -159,12 +185,14 @@ export const channels: Channel[] = [
     proxyDetails: { address: '45.89.112.39:8080', username: 'lb_user', password: '••••••', provider: 'DataImpulse', type: 'residential', buyDate: '2026-02-15', price: 10, expiryDate: '2026-04-15' },
     shopping: { enabled: false, products: [], category: '', amazonStoreId: '', commissionRate: 0 },
     videoDefaults: { ...defaultVideoDefaults, defaultPlaylist: 'Law Explained' },
+    youtubeLogin: false, gmailLogin: true, proxyHealth: true, proxyLatency: 120, driveAccess: true, sheetAccess: true, ixBrowserProfile: false, lastHealthCheck: '15 min ago',
+    monthRevenue: 45, monthViews: 25933, totalPublished: 12, longFormPerDay: 1, shortsPerDay: 0, lastVideoTime: 'Yesterday',
   },
 ];
 
 export const managerChannels = ['1', '2', '3'];
 
-export type VideoStatus = 'EDITING' | 'READY_TO_UPLOAD' | 'QUEUED' | 'UPLOADING' | 'UPLOADED_UNLISTED' | 'PUBLISHED' | 'ERROR';
+export type VideoStatus = 'EDITING' | 'READY_TO_UPLOAD' | 'QUEUED' | 'UPLOADING' | 'UPLOADED_UNLISTED' | 'PUBLISHED' | 'ERROR' | 'DETECTED' | 'DOWNLOADING' | 'UNLISTED' | 'SCHEDULED';
 
 export interface VideoItem {
   id: string;
@@ -186,6 +214,8 @@ export interface VideoItem {
   titleB?: string;
   thumbnailB?: boolean;
   quiz?: string;
+  variant?: string;
+  progress?: number;
 }
 
 function mockFiles(type: 'Long' | 'Short', hasOptionals: boolean): VideoFolderFile[] {
@@ -232,26 +262,26 @@ export const videoQueue: VideoItem[] = [
 ];
 
 export const activityFeed = [
-  { time: '2 min ago', message: 'TechVault: Video uploaded — "This Gadget Changed My Life"', type: 'upload' },
-  { time: '5 min ago', message: 'BenchDecoded: Warmup session completed', type: 'system' },
-  { time: '8 min ago', message: 'TrialTales: Published to YouTube — "Judge Judy vs The Most Annoying Plaintiff"', type: 'publish' },
-  { time: '12 min ago', message: 'VerdictVault: Upload started — "Top 10 Courtroom Freakouts"', type: 'upload' },
-  { time: '15 min ago', message: 'FoodFlicks: Video published — "5 Minute Meals That Actually Taste AMAZING"', type: 'publish' },
-  { time: '22 min ago', message: 'LawBites: Video published — "Why This Murder Case SHOCKED Everyone"', type: 'publish' },
-  { time: '30 min ago', message: 'BenchDecoded: Published to YouTube — "Judge DESTROYS Entitled Karen"', type: 'publish' },
-  { time: '35 min ago', message: 'TechVault: Published — "Best Budget Phones 2026"', type: 'publish' },
-  { time: '42 min ago', message: 'System: Daily backup completed', type: 'system' },
-  { time: '1 hr ago', message: 'TrialTales: Upload failed — retrying in 5 min', type: 'error' },
-  { time: '1.5 hr ago', message: 'TechVault: Published — "I Tested the $5000 AI Laptop"', type: 'publish' },
-  { time: '2 hr ago', message: 'System: Cron scheduler restarted', type: 'system' },
+  { time: '2 min ago', message: 'TechVault: Video uploaded — "This Gadget Changed My Life"', type: 'upload', icon: '📤' },
+  { time: '5 min ago', message: 'BenchDecoded: Warmup session completed', type: 'system', icon: '⚙️' },
+  { time: '8 min ago', message: 'TrialTales: Published to YouTube — "Judge Judy vs The Most Annoying Plaintiff"', type: 'publish', icon: '🚀' },
+  { time: '12 min ago', message: 'VerdictVault: Upload started — "Top 10 Courtroom Freakouts"', type: 'upload', icon: '📤' },
+  { time: '15 min ago', message: 'FoodFlicks: Video published — "5 Minute Meals That Actually Taste AMAZING"', type: 'publish', icon: '🚀' },
+  { time: '22 min ago', message: 'LawBites: Video published — "Why This Murder Case SHOCKED Everyone"', type: 'publish', icon: '🚀' },
+  { time: '30 min ago', message: 'BenchDecoded: Published to YouTube — "Judge DESTROYS Entitled Karen"', type: 'publish', icon: '🚀' },
+  { time: '35 min ago', message: 'TechVault: Published — "Best Budget Phones 2026"', type: 'publish', icon: '🚀' },
+  { time: '42 min ago', message: 'System: Daily backup completed', type: 'system', icon: '✅' },
+  { time: '1 hr ago', message: 'TrialTales: Upload failed — retrying in 5 min', type: 'error', icon: '⚠️' },
+  { time: '1.5 hr ago', message: 'TechVault: Published — "I Tested the $5000 AI Laptop"', type: 'publish', icon: '🚀' },
+  { time: '2 hr ago', message: 'System: Cron scheduler restarted', type: 'system', icon: '🔄' },
 ];
 
 export const alerts = [
-  { id: 'a1', severity: 'critical' as const, title: 'Proxy expires in 5 days', description: 'BenchDecoded proxy (45.89.112.34) expires on March 5, 2026. Renew immediately to avoid service interruption.', time: '10 min ago', action: 'Renew Now' },
-  { id: 'a2', severity: 'critical' as const, title: 'Upload failed 3 times on TrialTales', description: 'Video "Man Refuses to Pay Child Support" failed upload 3 times. IXBrowser session crashed during upload process.', time: '1 hr ago', action: 'Review' },
-  { id: 'a3', severity: 'warning' as const, title: 'IXBrowser subscription renews in 12 days', description: 'IXBrowser subscription ($49/mo) renews on March 12, 2026. Ensure payment method is up to date.', time: '3 hr ago', action: 'Reminder Set' },
-  { id: 'a4', severity: 'warning' as const, title: 'VerdictVault approaching YPP', description: 'VerdictVault has reached 847/1000 subscribers. Only 153 more subscribers needed for YouTube Partner Program eligibility.', time: '5 hr ago', action: 'View Stats' },
-  { id: 'a5', severity: 'info' as const, title: 'BenchDecoded video went viral', description: '"Judge DESTROYS Entitled Karen" is performing 3.2x above normal with 187,420 views today.', time: '2 hr ago', action: 'View' },
+  { id: 'a1', severity: 'critical' as const, type: 'health', channel: 'BENCH01', title: 'Proxy expires in 5 days', description: 'BenchDecoded proxy (45.89.112.34) expires on March 5, 2026. Renew immediately to avoid service interruption.', time: '10 min ago', action: 'Renew Now' },
+  { id: 'a2', severity: 'critical' as const, type: 'upload', channel: 'BENCH02', title: 'Upload failed 3 times on TrialTales', description: 'Video "Man Refuses to Pay Child Support" failed upload 3 times. IXBrowser session crashed during upload process.', time: '1 hr ago', action: 'Review' },
+  { id: 'a3', severity: 'warning' as const, type: 'finance', channel: '', title: 'IXBrowser subscription renews in 12 days', description: 'IXBrowser subscription ($49/mo) renews on March 12, 2026. Ensure payment method is up to date.', time: '3 hr ago', action: 'Reminder Set' },
+  { id: 'a4', severity: 'warning' as const, type: 'health', channel: 'VV', title: 'VerdictVault approaching YPP', description: 'VerdictVault has reached 847/1000 subscribers. Only 153 more subscribers needed for YouTube Partner Program eligibility.', time: '5 hr ago', action: 'View Stats' },
+  { id: 'a5', severity: 'info' as const, type: 'upload', channel: 'BENCH01', title: 'BenchDecoded video went viral', description: '"Judge DESTROYS Entitled Karen" is performing 3.2x above normal with 187,420 views today.', time: '2 hr ago', action: 'View' },
 ];
 
 export const resolvedAlerts = [
@@ -507,13 +537,16 @@ export interface Partner {
   title: string;
   equityPercent: number;
   role: string;
+  allTimeEarnings: number;
+  lastLogin: string;
+  channelsManaged: number;
 }
 
 export const partners: Partner[] = [
-  { id: 'p1', name: 'Mohsin', title: 'Founder & CEO', equityPercent: 40, role: 'Overall company strategy, growth, key decisions, partnerships' },
-  { id: 'p2', name: 'Mudassir', title: 'Partner & CFO', equityPercent: 40, role: 'Finance ownership: budgeting, expense controls, reporting, profitability' },
-  { id: 'p3', name: 'Haseeb', title: 'Head of Production', equityPercent: 10, role: 'Manages editors team, workflow, delivery, quality control' },
-  { id: 'p4', name: 'Waleed', title: 'Head of Strategy & Research', equityPercent: 10, role: 'Research, channel strategy, optimization frameworks, content systems' },
+  { id: 'p1', name: 'Mohsin', title: 'Founder & CEO', equityPercent: 40, role: 'Overall company strategy, growth, key decisions, partnerships', allTimeEarnings: 18430, lastLogin: '2 min ago', channelsManaged: 16 },
+  { id: 'p2', name: 'Mudassir', title: 'Partner & CFO', equityPercent: 40, role: 'Finance ownership: budgeting, expense controls, reporting, profitability', allTimeEarnings: 18430, lastLogin: '1h ago', channelsManaged: 16 },
+  { id: 'p3', name: 'Haseeb', title: 'Head of Production', equityPercent: 10, role: 'Manages editors team, workflow, delivery, quality control', allTimeEarnings: 4607, lastLogin: '3h ago', channelsManaged: 8 },
+  { id: 'p4', name: 'Waleed', title: 'Head of Strategy & Research', equityPercent: 10, role: 'Research, channel strategy, optimization frameworks, content systems', allTimeEarnings: 4607, lastLogin: 'Yesterday', channelsManaged: 4 },
 ];
 
 export interface ChannelPartnership {
