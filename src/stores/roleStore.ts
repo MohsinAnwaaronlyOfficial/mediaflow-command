@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Role = 'owner' | 'manager' | 'finance' | 'viewer' | 'reception';
+export type Role = 'owner' | 'manager' | 'finance';
 
 interface RoleState {
   role: Role;
@@ -16,14 +16,10 @@ export const ROLE_LABELS: Record<Role, string> = {
   owner: 'Owner',
   manager: 'Manager',
   finance: 'Finance',
-  viewer: 'Viewer',
-  reception: 'Reception',
 };
 
 export const ROLE_COLORS: Record<Role, string> = {
   owner: 'bg-primary',
   manager: 'bg-secondary',
   finance: 'bg-success',
-  viewer: 'bg-warning',
-  reception: 'bg-muted',
 };
