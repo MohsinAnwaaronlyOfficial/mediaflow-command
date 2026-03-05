@@ -52,7 +52,7 @@ export default function RevenuesView() {
               </div>
               <div><Label>Source</Label>
                 <Select><SelectTrigger className="mt-1"><SelectValue placeholder="Select source" /></SelectTrigger>
-                <SelectContent>{Object.entries(REVENUE_SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select>
+                <SelectContent>{Object.entries(REVENUE_SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v as string}</SelectItem>)}</SelectContent></Select>
               </div>
               <div><Label>Amount ($)</Label><Input type="number" placeholder="0.00" className="mt-1" /></div>
               <div><Label>Notes</Label><Input placeholder="Optional notes" className="mt-1" /></div>
