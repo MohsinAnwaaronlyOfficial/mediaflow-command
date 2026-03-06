@@ -111,6 +111,47 @@ export default function Settings() {
                 </div>
               </div>
             ))}
+
+            {/* Gemini AI Card */}
+            <div className="stat-card">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">🟦</span>
+                <span className="text-sm font-semibold">Google Gemini AI</span>
+              </div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <CheckCircle className="w-3.5 h-3.5 text-success" />
+                <span className="text-xs text-foreground">● Connected</span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Model: gemini-1.5-flash (free tier)</p>
+              <p className="text-xs text-muted-foreground mb-1">Used for: Comments, Keywords, Content Ideas</p>
+              <p className="text-[10px] text-muted-foreground mb-3">Free tier — 15 req/min, 1M tokens/day — no cost</p>
+              <div className="flex gap-2 mb-2">
+                <button onClick={() => channelsApi.testGemini().then(() => toast.success('Gemini AI connection OK')).catch(() => toast.error('Gemini AI test failed'))}
+                  className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">Test Connection</button>
+                <button className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-semibold">Set API Key</button>
+              </div>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline">
+                Get free API key at aistudio.google.com →
+              </a>
+            </div>
+
+            {/* Google Sheets Logging Card */}
+            <div className="stat-card">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">📊</span>
+                <span className="text-sm font-semibold">Google Sheets Logging</span>
+              </div>
+              <div className="space-y-2 mb-3">
+                {['Finance Log Sheet', 'Activity Log Sheet', 'Analytics Log Sheet'].map(sheet => (
+                  <div key={sheet} className="flex items-center justify-between p-2 bg-muted/20 rounded-lg">
+                    <span className="text-xs">{sheet}</span>
+                    <button className="text-xs text-primary hover:underline flex items-center gap-1">Open ↗</button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => channelsApi.initLogSheets().then(() => toast.success('Log sheets initialized')).catch(() => toast.error('Failed to initialize sheets'))}
+                className="w-full px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">Initialize Sheets</button>
+            </div>
           </div>
         </TabsContent>
 
