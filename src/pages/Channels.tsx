@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRoleStore } from '@/stores/roleStore';
 import { channelsApi } from '@/api/channels';
 import { channels as fallbackChannels, managerChannels, youtubeCategories } from '@/data/mockData';
+import WarmupCookieSection from '@/components/channels/WarmupCookieSection';
 import type { Channel } from '@/types';
 import TierBadge from '@/components/shared/TierBadge';
 import HealthDot from '@/components/shared/HealthDot';
 import { SkeletonCard } from '@/components/shared/SkeletonCard';
 import {
   Plus, RefreshCw, ShoppingCart, Settings, Users, Globe, Video,
-  Search, Grid3x3, List, Snowflake, CheckCircle
+  Search, Grid3x3, List, Snowflake, CheckCircle, Flame
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -21,11 +22,12 @@ import { toast } from 'sonner';
 function ChannelDetailPanel({ ch }: { ch: Channel }) {
   return (
     <Tabs defaultValue="identity" className="mt-4">
-      <TabsList className="grid grid-cols-5 bg-muted/30 h-auto p-1">
+      <TabsList className="grid grid-cols-6 bg-muted/30 h-auto p-1">
         <TabsTrigger value="identity" className="text-xs py-1.5 gap-1"><Globe className="w-3 h-3" />Identity</TabsTrigger>
         <TabsTrigger value="team" className="text-xs py-1.5 gap-1"><Users className="w-3 h-3" />Team</TabsTrigger>
         <TabsTrigger value="proxy" className="text-xs py-1.5 gap-1"><Settings className="w-3 h-3" />Proxy</TabsTrigger>
         <TabsTrigger value="shopping" className="text-xs py-1.5 gap-1"><ShoppingCart className="w-3 h-3" />Shopping</TabsTrigger>
+        <TabsTrigger value="warmup" className="text-xs py-1.5 gap-1"><Flame className="w-3 h-3" />Warmup</TabsTrigger>
         <TabsTrigger value="defaults" className="text-xs py-1.5 gap-1"><Video className="w-3 h-3" />YT Settings</TabsTrigger>
       </TabsList>
 
@@ -105,6 +107,10 @@ function ChannelDetailPanel({ ch }: { ch: Channel }) {
             </div>
           </div>
         ) : <p className="text-sm text-muted-foreground">Shopping disabled.</p>}
+      </TabsContent>
+
+      <TabsContent value="warmup" className="mt-3">
+        <WarmupCookieSection channelId={ch.id} niche={ch.niche} />
       </TabsContent>
 
       <TabsContent value="defaults" className="space-y-3 mt-3">

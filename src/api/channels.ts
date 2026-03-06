@@ -30,4 +30,25 @@ export const channelsApi = {
 
   // Health
   getSystemHealth: () => api.get('/channel-setup/health'),
+
+  // Warmup & Cookie
+  getWarmupDefaultSites: () => api.get('/channel-setup/warmup/default-sites'),
+  getNicheSites: (niche: string) => api.get(`/channel-setup/warmup/niche-sites/${niche}`),
+  getWarmupSessions: (channelKey?: string) => api.get('/channel-setup/warmup/sessions', { params: { channelKey } }),
+
+  // Sheets Logging
+  getLogSheets: () => api.get('/channel-setup/log-sheets'),
+  initLogSheets: () => api.post('/channel-setup/log-sheets/init'),
+
+  // Gemini AI
+  testGemini: () => api.get('/channel-setup/gemini/test'),
+  generateKeywords: (niche: string, count?: number) => api.post('/channel-setup/gemini/generate-keywords', { niche, count }),
+  generateContentIdeas: (niche: string, recentTitles?: string[], count?: number) => api.post('/channel-setup/gemini/content-ideas', { niche, recentTitles, count }),
+
+  // Proxy Tracking (Finance)
+  getProxyTracking: () => api.get('/channel-setup/proxy-tracking'),
+  getProxyChannels: () => api.get('/channel-setup/proxy-tracking/channels'),
+  addProxy: (data: Record<string, unknown>) => api.post('/channel-setup/proxy-tracking', data),
+  updateProxy: (id: number, data: Record<string, unknown>) => api.put(`/channel-setup/proxy-tracking/${id}`, data),
+  deleteProxy: (id: number) => api.delete(`/channel-setup/proxy-tracking/${id}`),
 };
