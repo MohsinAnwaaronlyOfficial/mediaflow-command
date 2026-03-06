@@ -1,14 +1,16 @@
-import { ArrowUp, ArrowDown, Eye, UserPlus, Video, DollarSign, Activity, Upload, Pause, OctagonX, RefreshCw } from 'lucide-react';
-import { channels, activityFeed, alerts, videoQueue, managerChannels } from '@/data/mockData';
-import { useRoleStore } from '@/stores/roleStore';
+import { useEffect, useState, useMemo } from 'react';
+import { ArrowUp, ArrowDown, Activity, Video, DollarSign } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useMemo } from 'react';
-import { generateViewsData, channelColors } from '@/data/mockData';
-import { AlertTriangle, XCircle, Info } from 'lucide-react';
+import { useRoleStore } from '@/stores/roleStore';
+import { channelsApi } from '@/api/channels';
+import { SkeletonStats, SkeletonCard } from '@/components/shared/SkeletonCard';
+import TierBadge from '@/components/shared/TierBadge';
+import type { Channel, VideoItem, ActivityItem } from '@/types';
+import { channels as fallbackChannels, videoQueue as fallbackQueue, activityFeed as fallbackFeed, generateViewsData, channelColors, managerChannels } from '@/data/mockData';
 
 function StatCard({ label, value, change, positive, icon: Icon, color }: {
-  label: string; value: string; change: string; positive: boolean; icon: any; color: string;
+  label: string; value: string; change: string; positive: boolean; icon: React.ElementType; color: string;
 }) {
   return (
     <div className="stat-card group">
@@ -21,23 +23,18 @@ function StatCard({ label, value, change, positive, icon: Icon, color }: {
       <div className="stat-value animate-count-up">{value}</div>
       <div className="flex items-center gap-1 mt-1">
         {positive ? <ArrowUp className="w-3 h-3 text-success" /> : <ArrowDown className="w-3 h-3 text-destructive" />}
-        <span className={`text-xs ${positive ? 'text-success' : 'text-destructive'}`}>{change} vs last</span>
+        <span className={`text-xs ${positive ? 'text-success' : 'text-destructive'}`}>{change}</span>
       </div>
     </div>
   );
 }
 
-function TierBadge({ tier }: { tier: string }) {
-  const cls = tier === 'T1' ? 'badge-t1' : tier === 'T2' ? 'badge-t2' : tier === 'T3' ? 'badge-t3' : 'badge-t4';
-  return <span className={`${cls} rounded-full px-2 py-0.5 text-[10px] font-bold`}>{tier}</span>;
-}
-
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey: string; color: string; value: number }>; label?: string }) => {
   if (!active || !payload) return null;
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-xl">
       <p className="text-xs text-muted-foreground mb-1">{label}</p>
-      {payload.slice(0, 4).map((p: any) => (
+      {payload.slice(0, 4).map((p) => (
         <div key={p.dataKey} className="flex items-center gap-2 text-xs">
           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
           <span className="text-foreground">{p.dataKey}: {p.value?.toLocaleString()}</span>
@@ -49,32 +46,71 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function Overview() {
   const { role } = useRoleStore();
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [videoQueue, setVideoQueue] = useState<VideoItem[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [chRes, vqRes] = await Promise.all([
+          channelsApi.getChannels(),
+          channelsApi.getVideoQueue(),
+        ]);
+        setChannels(chRes.data);
+        setVideoQueue(vqRes.data);
+        setActivity([]);
+      } catch {
+        // Fallback to local data
+        setChannels(fallbackChannels);
+        setVideoQueue(fallbackQueue);
+        setActivity(fallbackFeed);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
   const visibleChannels = role === 'manager'
     ? channels.filter(c => managerChannels.includes(c.id))
     : channels;
 
   const activeCount = visibleChannels.filter(c => c.status === 'active').length;
-  const totalRevenue = visibleChannels.reduce((s, c) => s + c.monthRevenue, 0);
-  const todayVideos = videoQueue.filter(v => v.status === 'PUBLISHED' && v.publishDate === '2026-03-04').length;
+  const totalRevenue = visibleChannels.reduce((s, c) => s + (c.monthRevenue || 0), 0);
+  const todayVideos = videoQueue.filter(v => v.status === 'PUBLISHED').length;
   const publishing = videoQueue.filter(v => v.status === 'UPLOADING').length;
   const allHealthy = visibleChannels.every(c => c.status === 'active');
   const viewsData = useMemo(() => generateViewsData(30), []);
 
-  // Pipeline stats
   const pipelineStages = [
-    { label: 'DETECTED', count: videoQueue.filter(v => v.status === 'DETECTED').length, color: 'text-muted-foreground' },
-    { label: 'DOWNLOADING', count: videoQueue.filter(v => v.status === 'DOWNLOADING').length, color: 'text-secondary' },
-    { label: 'UPLOADING', count: videoQueue.filter(v => v.status === 'UPLOADING').length, color: 'text-primary' },
-    { label: 'UNLISTED', count: videoQueue.filter(v => v.status === 'UNLISTED').length, color: 'text-[hsl(280,60%,70%)]' },
-    { label: 'SCHEDULED', count: videoQueue.filter(v => v.status === 'SCHEDULED').length, color: 'text-warning' },
-    { label: 'PUBLISHED', count: videoQueue.filter(v => v.status === 'PUBLISHED').length, color: 'text-success' },
+    { label: 'DETECTED', count: videoQueue.filter(v => v.status === 'DETECTED').length, color: 'text-muted-foreground', icon: '📥' },
+    { label: 'DOWNLOADING', count: videoQueue.filter(v => v.status === 'DOWNLOADING').length, color: 'text-secondary', icon: '⬇️' },
+    { label: 'UPLOADING', count: videoQueue.filter(v => v.status === 'UPLOADING').length, color: 'text-primary', icon: '⬆️' },
+    { label: 'UNLISTED', count: videoQueue.filter(v => v.status === 'UNLISTED').length, color: 'text-[hsl(280,60%,70%)]', icon: '🔒' },
+    { label: 'SCHEDULED', count: videoQueue.filter(v => v.status === 'SCHEDULED').length, color: 'text-warning', icon: '📅' },
+    { label: 'PUBLISHED', count: videoQueue.filter(v => v.status === 'PUBLISHED').length, color: 'text-success', icon: '✅' },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-slide-up">
+        <SkeletonStats count={4} />
+        <SkeletonCard />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2"><SkeletonCard /></div>
+          <SkeletonCard />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
       {/* Hero Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Active Channels" value={`${activeCount} / ${visibleChannels.length}`} change={`↑ 2 this week`} positive icon={Activity} color="text-primary" />
+        <StatCard label="Active Channels" value={`${activeCount} / ${visibleChannels.length}`} change="↑ 2 this week" positive icon={Activity} color="text-primary" />
         <StatCard label="Videos Today" value={`${todayVideos} uploaded`} change={`${publishing} publishing`} positive icon={Video} color="text-success" />
         <StatCard label="Month Revenue" value={`$${totalRevenue.toLocaleString()}`} change="↑ 12% vs last" positive icon={DollarSign} color="text-primary" />
         <div className="stat-card">
@@ -91,7 +127,7 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* Upload Pipeline Status */}
+      {/* Upload Pipeline */}
       <NavLink to="/pipeline" className="block">
         <div className="stat-card">
           <div className="flex items-center gap-2 mb-3">
@@ -132,9 +168,9 @@ export default function Overview() {
                     <span className="font-semibold text-xs truncate">{ch.id}</span>
                   </div>
                   <span className={`flex items-center gap-1 text-[10px] font-semibold ${
-                    ch.status === 'active' ? 'text-success' : ch.status === 'error' ? 'text-destructive' : ch.status === 'inactive' ? 'text-muted-foreground' : 'text-warning'
+                    ch.status === 'active' ? 'text-success' : ch.status === 'error' ? 'text-destructive' : 'text-warning'
                   }`}>
-                    <span className={`status-dot ${ch.status === 'active' ? 'status-dot-online' : ch.status === 'error' ? 'status-dot-error' : ch.status === 'inactive' ? 'status-dot-offline' : 'status-dot-warning'}`} />
+                    <span className={`status-dot ${ch.status === 'active' ? 'status-dot-online' : ch.status === 'error' ? 'status-dot-error' : 'status-dot-warning'}`} />
                     {ch.status.toUpperCase()}
                   </span>
                 </div>
@@ -149,7 +185,7 @@ export default function Overview() {
                   <div><span className="text-muted-foreground">Queue:</span> <span className="font-semibold">{ch.uploadQueue} pending</span></div>
                   <div><span className="text-muted-foreground">Published:</span> <span className="font-semibold">{ch.totalPublished}</span></div>
                   <div><span className="text-muted-foreground">Rev:</span> <span className="font-semibold text-primary">${ch.monthRevenue}</span></div>
-                  <div><span className="text-muted-foreground">Views:</span> <span className="font-semibold">{(ch.monthViews / 1000).toFixed(0)}K</span></div>
+                  <div><span className="text-muted-foreground">Views:</span> <span className="font-semibold">{((ch.monthViews || 0) / 1000).toFixed(0)}K</span></div>
                 </div>
               </NavLink>
             ))}
@@ -160,7 +196,7 @@ export default function Overview() {
         <div className="stat-card h-fit">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today's Activity</h3>
           <div className="space-y-2 max-h-[600px] overflow-y-auto scrollbar-thin">
-            {activityFeed.map((item, i) => (
+            {activity.length > 0 ? activity.map((item, i) => (
               <div key={i} className="flex items-start gap-3 py-2 border-b border-border/50 last:border-0">
                 <span className="text-sm shrink-0">{item.icon}</span>
                 <div className="min-w-0 flex-1">
@@ -168,7 +204,9 @@ export default function Overview() {
                   <p className="text-[10px] text-muted-foreground mt-0.5">{item.time}</p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-xs text-muted-foreground text-center py-4">Activity will appear here from API</p>
+            )}
           </div>
         </div>
       </div>

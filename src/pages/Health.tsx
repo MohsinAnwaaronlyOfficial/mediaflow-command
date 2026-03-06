@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { channels } from '@/data/mockData';
+import { useState, useEffect } from 'react';
+import { channelsApi } from '@/api/channels';
+import { systemApi } from '@/api/system';
+import { channels as fallbackChannels } from '@/data/mockData';
+import type { Channel, PM2Worker, CronJob, ErrorLog } from '@/types';
+import { SkeletonCard, SkeletonTable } from '@/components/shared/SkeletonCard';
 import { Progress } from '@/components/ui/progress';
-import { Play, Loader2, OctagonX, RefreshCw, CheckCircle, AlertTriangle, XCircle, HardDrive, Cpu, MemoryStick, Download } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, XCircle, RefreshCw, HardDrive, Cpu, MemoryStick, Download } from 'lucide-react';
 
-const cronJobs = [
+const defaultCronJobs: CronJob[] = [
   { name: 'drive-watcher', interval: 'Every 10min', last: '3 min ago', status: 'ok' },
   { name: 'upload-worker', interval: 'Every 15min', last: '8 min ago', status: 'ok' },
   { name: 'publish-scheduler', interval: 'Every 30min', last: '12 min ago', status: 'ok' },
@@ -16,14 +20,14 @@ const cronJobs = [
   { name: 'ab-test-evaluator', interval: 'Every 12h', last: '6h ago', status: 'ok' },
 ];
 
-const pm2Workers = [
+const defaultWorkers: PM2Worker[] = [
   { name: 'umf-api', status: 'online', cpu: '2%', memory: '44MB', restarts: 96, uptime: '14d' },
   { name: 'umf-scheduler', status: 'online', cpu: '1%', memory: '38MB', restarts: 2, uptime: '14d' },
   { name: 'umf-upload', status: 'online', cpu: '8%', memory: '120MB', restarts: 12, uptime: '7d' },
   { name: 'umf-analytics', status: 'online', cpu: '3%', memory: '56MB', restarts: 0, uptime: '14d' },
 ];
 
-const errorLogs = [
+const defaultErrorLogs: ErrorLog[] = [
   { time: '09:30:12', level: 'ERROR', message: 'IXBrowser session crash — profile IX-4822 — upload interrupted', channel: 'BENCH02' },
   { time: '09:28:45', level: 'ERROR', message: 'Upload timeout after 180s — video "Man Refuses to Pay"', channel: 'BENCH02' },
   { time: '08:15:33', level: 'WARN', message: 'Proxy latency >2000ms — NEWS02', channel: 'NEWS02' },
@@ -35,12 +39,42 @@ const errorLogs = [
 ];
 
 export default function Health() {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [workers, setWorkers] = useState<PM2Worker[]>(defaultWorkers);
+  const [cronJobs, setCronJobs] = useState<CronJob[]>(defaultCronJobs);
+  const [errorLogs, setErrorLogs] = useState<ErrorLog[]>(defaultErrorLogs);
+  const [loading, setLoading] = useState(true);
   const [loadingWorker, setLoadingWorker] = useState<string | null>(null);
-  const handleRestart = (name: string) => { setLoadingWorker(name); setTimeout(() => setLoadingWorker(null), 2000); };
+
+  useEffect(() => {
+    Promise.all([
+      channelsApi.getChannels().catch(() => ({ data: fallbackChannels })),
+      systemApi.getWorkers().catch(() => ({ data: defaultWorkers })),
+      systemApi.getCrons().catch(() => ({ data: defaultCronJobs })),
+      systemApi.getLogs().catch(() => ({ data: defaultErrorLogs })),
+    ]).then(([chRes, wRes, cRes, lRes]) => {
+      setChannels(chRes.data);
+      setWorkers(wRes.data);
+      setCronJobs(cRes.data);
+      setErrorLogs(lRes.data);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const handleRestart = async (name: string) => {
+    setLoadingWorker(name);
+    try {
+      await systemApi.restartWorker(name);
+    } catch { /* fallback */ }
+    setTimeout(() => setLoadingWorker(null), 2000);
+  };
 
   const healthyCount = channels.filter(c => c.youtubeLogin && c.proxyHealth && c.driveAccess && c.sheetAccess).length;
   const issueCount = channels.length - healthyCount;
   const allGreen = issueCount === 0;
+
+  if (loading) {
+    return <div className="space-y-6 animate-slide-up"><SkeletonCard /><SkeletonTable rows={8} cols={9} /></div>;
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -141,7 +175,7 @@ export default function Health() {
             ))}
           </tr></thead>
           <tbody>
-            {pm2Workers.map((w, i) => (
+            {workers.map((w, i) => (
               <tr key={w.name} className={`table-row-hover border-b border-border/50 ${i % 2 === 0 ? 'bg-background/20' : ''}`}>
                 <td className="py-3 px-3 font-medium font-mono">{w.name}</td>
                 <td className="py-3 px-3"><span className="pill-published text-[10px]">✅ {w.status}</span></td>

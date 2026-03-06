@@ -1,4 +1,9 @@
-import { teamMembers, teamActivityLog, partners, channels } from '@/data/mockData';
+import { useState, useEffect } from 'react';
+import { teamMembers as fallbackTeam, teamActivityLog as fallbackLog, partners as fallbackPartners, channels as fallbackChannels } from '@/data/mockData';
+import { channelsApi } from '@/api/channels';
+import { financeApi } from '@/api/finance';
+import type { Partner, TeamMember, TeamActivityLog, Channel } from '@/types';
+import { SkeletonCard, SkeletonTable } from '@/components/shared/SkeletonCard';
 import { Plus, Edit, UserCheck, UserX } from 'lucide-react';
 
 const roleBadgeColors: Record<string, string> = {
@@ -8,6 +13,28 @@ const roleBadgeColors: Record<string, string> = {
 };
 
 export default function Team() {
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [activityLog, setActivityLog] = useState<TeamActivityLog[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      financeApi.getPartners().catch(() => ({ data: fallbackPartners })),
+      channelsApi.getChannels().catch(() => ({ data: fallbackChannels })),
+    ]).then(([pRes, chRes]) => {
+      setPartners(pRes.data);
+      setChannels(chRes.data);
+      setTeamMembers(fallbackTeam);
+      setActivityLog(fallbackLog);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="space-y-6 animate-slide-up"><div className="grid grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}</div><SkeletonTable /></div>;
+  }
+
   return (
     <div className="space-y-6 animate-slide-up">
       <div className="flex items-center justify-between">
@@ -36,7 +63,7 @@ export default function Team() {
             <div className="space-y-2 text-xs">
               <div className="flex justify-between"><span className="text-muted-foreground">Equity</span><span className="font-bold text-primary">{p.equityPercent}%</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">This Month</span><span className="font-bold text-success">${p.allTimeEarnings > 0 ? Math.floor(p.allTimeEarnings / 12) : 0}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">All-Time</span><span className="font-semibold">${p.allTimeEarnings.toLocaleString()}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">All-Time</span><span className="font-semibold">${(p.allTimeEarnings || 0).toLocaleString()}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Last Login</span><span>{p.lastLogin}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Channels</span><span>{p.channelsManaged}</span></div>
             </div>
@@ -95,7 +122,7 @@ export default function Team() {
       <div className="stat-card">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">Activity Log</h3>
         <div className="space-y-2 max-h-[400px] overflow-y-auto scrollbar-thin">
-          {teamActivityLog.map((log, i) => (
+          {activityLog.map((log, i) => (
             <div key={i} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
               <span className="text-xs text-muted-foreground w-36 shrink-0 font-mono">{log.time}</span>
               <span className="text-xs font-semibold text-primary w-32 shrink-0">{log.user}</span>

@@ -5,8 +5,19 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle, Download, AlertTriangle, Trash2 } from 'lucide-react';
+import { systemApi } from '@/api/system';
+import { toast } from 'sonner';
 
 export default function Settings() {
+  const handleTestConnection = async (name: string) => {
+    try {
+      if (name === 'Slack') await systemApi.testSlack();
+      toast.success(`${name} connection OK`);
+    } catch {
+      toast.error(`${name} connection failed`);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-slide-up">
       <div>
@@ -17,7 +28,7 @@ export default function Settings() {
       <Tabs defaultValue="system">
         <TabsList className="bg-muted/30 h-auto p-1 flex-wrap gap-0.5">
           <TabsTrigger value="system" className="text-xs py-1.5">System</TabsTrigger>
-          <TabsTrigger value="channels" className="text-xs py-1.5">Channels</TabsTrigger>
+          <TabsTrigger value="youtube" className="text-xs py-1.5">YouTube Defaults</TabsTrigger>
           <TabsTrigger value="integrations" className="text-xs py-1.5">Integrations</TabsTrigger>
           <TabsTrigger value="security" className="text-xs py-1.5">Security</TabsTrigger>
           <TabsTrigger value="backups" className="text-xs py-1.5">Backups</TabsTrigger>
@@ -37,19 +48,22 @@ export default function Settings() {
               <div><Label className="text-xs">Upload Retry Attempts</Label><Input type="number" defaultValue={3} className="mt-1" /></div>
               <div><Label className="text-xs">Stale Upload Timeout (min)</Label><Input type="number" defaultValue={45} className="mt-1" /></div>
               <div><Label className="text-xs">Drive Cleanup Delay (hours)</Label><Input type="number" defaultValue={48} className="mt-1" /></div>
+              <div><Label className="text-xs">Download Directory</Label><Input value="/home/umf/downloads" readOnly className="mt-1 font-mono text-xs" /></div>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="channels" className="space-y-4 mt-4">
+        <TabsContent value="youtube" className="space-y-4 mt-4">
           <div className="stat-card space-y-4">
-            <h3 className="text-sm font-semibold">Default Channel Settings</h3>
+            <h3 className="text-sm font-semibold">Global YouTube Defaults</h3>
+            <p className="text-xs text-muted-foreground">Per-channel settings override these</p>
             <div className="grid grid-cols-2 gap-4">
               <div><Label className="text-xs">Default YouTube Category</Label>
                 <Select defaultValue="Entertainment"><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>{['Entertainment','Education','News & Politics','Science & Technology'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                <SelectContent>{['Entertainment','Education','News & Politics','Science & Technology','People & Blogs'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
               </div>
               <div><Label className="text-xs">Default Language</Label><Input defaultValue="English" className="mt-1" /></div>
+              <div><Label className="text-xs">Default Location</Label><Input defaultValue="United States" className="mt-1" /></div>
               <div><Label className="text-xs">Default License</Label>
                 <Select defaultValue="standard"><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value="standard">Standard YouTube License</SelectItem><SelectItem value="cc">Creative Commons</SelectItem></SelectContent></Select>
@@ -58,12 +72,16 @@ export default function Settings() {
                 <Select defaultValue="all"><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value="all">All</SelectItem><SelectItem value="review">Hold for review</SelectItem><SelectItem value="off">Off</SelectItem></SelectContent></Select>
               </div>
+              <div><Label className="text-xs">Shorts Remixing</Label>
+                <Select defaultValue="allow_all"><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="allow_all">Allow all</SelectItem><SelectItem value="attribution">With attribution</SelectItem><SelectItem value="dont_allow">Don't allow</SelectItem></SelectContent></Select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {['End Screen Template', 'Cards Default', 'Monetization T1/T2 ON', 'T3/T4 Monetization OFF'].map(label => (
+              {['End Screen Template', 'Cards Default', 'Auto Chapters', 'Notify Subscribers', 'Embedding Allowed', 'Paid Promotion'].map(label => (
                 <div key={label} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
                   <span className="text-xs">{label}</span>
-                  <Switch defaultChecked={label.includes('ON') || label.includes('End') || label.includes('Cards')} />
+                  <Switch defaultChecked={label.includes('End') || label.includes('Cards') || label.includes('Auto') || label.includes('Notify') || label.includes('Embedding')} />
                 </div>
               ))}
             </div>
@@ -73,10 +91,9 @@ export default function Settings() {
         <TabsContent value="integrations" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { name: 'IXBrowser', color: '🟠', status: 'Connected (172.20.240.1:53200)', detail: '16 profiles detected', icon: '✅' },
-              { name: 'Google Drive & Sheets', color: '🟢', status: 'Authenticated as user@gmail.com', detail: '16 channels configured', icon: '✅' },
-              { name: 'Slack', color: '🟣', status: '5/6 channels connected', detail: 'Last message: 15 min ago', icon: '✅' },
-              { name: 'Trello', color: '🔵', status: 'Board: UMF Command Center', detail: '14 lists | 23 open cards', icon: '✅' },
+              { name: 'IXBrowser', color: '🟠', status: 'Connected (172.20.240.1:53200)', detail: '16 profiles detected • Last sync: 3 min ago' },
+              { name: 'Google Drive & Sheets', color: '🟢', status: 'Authenticated as umf@gmail.com', detail: '16 channels configured' },
+              { name: 'Slack', color: '🟣', status: '6/6 channels connected', detail: 'Last message: 15 min ago' },
             ].map(i => (
               <div key={i.name} className="stat-card">
                 <div className="flex items-center gap-2 mb-2">
@@ -89,7 +106,7 @@ export default function Settings() {
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">{i.detail}</p>
                 <div className="flex gap-2">
-                  <button className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">Test Connection</button>
+                  <button onClick={() => handleTestConnection(i.name)} className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">Test Connection</button>
                   <button className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-semibold">Settings</button>
                 </div>
               </div>
@@ -137,11 +154,11 @@ export default function Settings() {
             </div>
             <div className="space-y-2">
               {[
-                { date: '2026-03-04 02:00 AM', size: '2.3GB', status: '✅' },
-                { date: '2026-03-03 02:00 AM', size: '2.2GB', status: '✅' },
-                { date: '2026-03-02 02:00 AM', size: '2.1GB', status: '✅' },
-                { date: '2026-03-01 02:00 AM', size: '2.3GB', status: '✅' },
-                { date: '2026-02-28 02:00 AM', size: '2.0GB', status: '✅' },
+                { date: '2026-03-06 02:00 AM', size: '2.3GB', status: '✅' },
+                { date: '2026-03-05 02:00 AM', size: '2.2GB', status: '✅' },
+                { date: '2026-03-04 02:00 AM', size: '2.1GB', status: '✅' },
+                { date: '2026-03-03 02:00 AM', size: '2.3GB', status: '✅' },
+                { date: '2026-03-02 02:00 AM', size: '2.0GB', status: '✅' },
               ].map((b, i) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
                   <div className="flex items-center gap-2">

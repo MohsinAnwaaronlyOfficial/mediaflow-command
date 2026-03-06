@@ -1,7 +1,11 @@
-import { useState } from 'react';
-import { videoQueue, channels, managerChannels, type VideoStatus } from '@/data/mockData';
+import { useState, useEffect } from 'react';
+import { channelsApi } from '@/api/channels';
+import { videoQueue as fallbackQueue, channels as fallbackChannels, managerChannels } from '@/data/mockData';
 import { useRoleStore } from '@/stores/roleStore';
-import { Search, Loader2, Eye, SkipForward, ExternalLink, Film, List, LayoutGrid, ChevronDown, ChevronRight, FileText, Image, HelpCircle, Check, X } from 'lucide-react';
+import type { VideoItem, VideoStatus, Channel } from '@/types';
+import TierBadge from '@/components/shared/TierBadge';
+import { SkeletonCard } from '@/components/shared/SkeletonCard';
+import { Search, Loader2, Eye, SkipForward, ExternalLink, LayoutGrid, List, ChevronDown, ChevronRight, Film, FileText, Image, HelpCircle, Check, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -16,23 +20,17 @@ const stageConfig: Record<string, { label: string; icon: string; color: string }
   ERROR: { label: '❌ Error', icon: '❌', color: 'text-destructive' },
 };
 
-function StatusBadge({ status }: { status: VideoStatus }) {
+function VideoStatusBadge({ status }: { status: VideoStatus }) {
   const cls: Record<string, string> = {
     DETECTED: 'pill-editing', DOWNLOADING: 'pill-ready', UPLOADING: 'pill-uploading',
     UNLISTED: 'pill-unlisted', SCHEDULED: 'pill-queued', PUBLISHED: 'pill-published', ERROR: 'pill-error',
   };
   return (
     <span className={cls[status] || 'pill-editing'}>
-      {status === 'UPLOADING' && <Loader2 className="w-3 h-3 animate-spin" />}
-      {status === 'DOWNLOADING' && <Loader2 className="w-3 h-3 animate-spin" />}
+      {(status === 'UPLOADING' || status === 'DOWNLOADING') && <Loader2 className="w-3 h-3 animate-spin" />}
       {status}
     </span>
   );
-}
-
-function TierBadge({ tier }: { tier: string }) {
-  const cls = tier === 'T1' ? 'badge-t1' : tier === 'T2' ? 'badge-t2' : tier === 'T3' ? 'badge-t3' : 'badge-t4';
-  return <span className={`${cls} rounded px-1.5 py-0.5 text-[10px] font-bold`}>{tier}</span>;
 }
 
 function FileIcon({ name }: { name: string }) {
@@ -44,11 +42,21 @@ function FileIcon({ name }: { name: string }) {
 
 export default function Pipeline() {
   const { role } = useRoleStore();
+  const [videoQueue, setVideoQueue] = useState<VideoItem[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'kanban' | 'table'>('kanban');
   const [channelFilter, setChannelFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([channelsApi.getVideoQueue(), channelsApi.getChannels()])
+      .then(([vqRes, chRes]) => { setVideoQueue(vqRes.data); setChannels(chRes.data); })
+      .catch(() => { setVideoQueue(fallbackQueue); setChannels(fallbackChannels); })
+      .finally(() => setLoading(false));
+  }, []);
 
   const visibleChannels = role === 'manager' ? channels.filter(c => managerChannels.includes(c.id)) : channels;
   let filtered = role === 'manager' ? videoQueue.filter(v => managerChannels.includes(v.channelId)) : [...videoQueue];
@@ -58,6 +66,10 @@ export default function Pipeline() {
 
   const stages: VideoStatus[] = ['DETECTED', 'DOWNLOADING', 'UPLOADING', 'UNLISTED', 'SCHEDULED', 'PUBLISHED'];
   const stageCounts = stages.map(s => ({ status: s, count: filtered.filter(v => v.status === s).length, ...stageConfig[s] }));
+
+  if (loading) {
+    return <div className="space-y-6 animate-slide-up"><SkeletonCard /><div className="grid grid-cols-6 gap-3">{Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}</div></div>;
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -71,13 +83,6 @@ export default function Pipeline() {
             {i < stageCounts.length - 1 && <span className="text-muted-foreground ml-2">|</span>}
           </div>
         ))}
-        {filtered.filter(v => v.status === 'ERROR').length > 0 && (
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-sm">❌</span>
-            <span className="text-xs text-muted-foreground">Errors:</span>
-            <span className="text-sm font-bold text-destructive">{filtered.filter(v => v.status === 'ERROR').length}</span>
-          </div>
-        )}
       </div>
 
       {/* Filters */}
@@ -108,7 +113,6 @@ export default function Pipeline() {
       </div>
 
       {view === 'kanban' ? (
-        /* Kanban View */
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {stages.map(stage => (
             <div key={stage} className="space-y-2">
@@ -146,7 +150,6 @@ export default function Pipeline() {
           ))}
         </div>
       ) : (
-        /* Table View */
         <div className="stat-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border">
@@ -159,13 +162,14 @@ export default function Pipeline() {
               {filtered.slice(0, 30).map((v, i) => (
                 <tr key={v.id}>
                   <td colSpan={9} className="p-0">
-                    <div className={`table-row-hover border-b border-border/50 cursor-pointer flex items-center ${i % 2 === 0 ? 'bg-background/20' : ''}`} onClick={() => setExpandedRow(expandedRow === v.id ? null : v.id)}>
+                    <div className={`table-row-hover border-b border-border/50 cursor-pointer flex items-center ${i % 2 === 0 ? 'bg-background/20' : ''}`}
+                      onClick={() => setExpandedRow(expandedRow === v.id ? null : v.id)}>
                       <div className="py-3 px-2 w-8">{expandedRow === v.id ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}</div>
                       <div className="py-3 px-2 font-medium whitespace-nowrap flex-shrink-0 w-28">{v.channel}</div>
                       <div className="py-3 px-2 flex-1 truncate max-w-[250px]">{v.title}</div>
                       <div className="py-3 px-2 w-16"><span className={`text-xs font-semibold px-2 py-0.5 rounded ${v.videoType === 'Long' ? 'bg-secondary/30 text-secondary-foreground' : 'bg-primary/20 text-primary'}`}>{v.videoType}</span></div>
                       <div className="py-3 px-2 font-mono text-xs text-muted-foreground w-24">{v.folderName}</div>
-                      <div className="py-3 px-2 w-28"><StatusBadge status={v.status} /></div>
+                      <div className="py-3 px-2 w-28"><VideoStatusBadge status={v.status} /></div>
                       <div className="py-3 px-2 text-muted-foreground text-xs w-24">{v.publishDate}</div>
                       <div className="py-3 px-2 text-muted-foreground text-xs w-20">{v.publishTime}</div>
                       <div className="py-3 px-2 w-24" onClick={e => e.stopPropagation()}>
