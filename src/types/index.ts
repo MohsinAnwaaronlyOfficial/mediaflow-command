@@ -93,7 +93,7 @@ export interface Channel {
   shortsPerDay: number;
 }
 
-export type VideoStatus = 'DETECTED' | 'DOWNLOADING' | 'UPLOADING' | 'UNLISTED' | 'SCHEDULED' | 'PUBLISHED' | 'ERROR';
+export type VideoStatus = 'EDITING' | 'READY_TO_UPLOAD' | 'QUEUED' | 'UPLOADING' | 'UPLOADED_UNLISTED' | 'PUBLISHED' | 'ERROR' | 'DETECTED' | 'DOWNLOADING' | 'UNLISTED' | 'SCHEDULED';
 
 export interface VideoFolderFile {
   name: string;
