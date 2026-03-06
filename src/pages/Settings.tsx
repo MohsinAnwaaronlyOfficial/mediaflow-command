@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle, Download, AlertTriangle, Trash2 } from 'lucide-react';
 import { systemApi } from '@/api/system';
+import { channelsApi } from '@/api/channels';
 import { toast } from 'sonner';
 
 export default function Settings() {
