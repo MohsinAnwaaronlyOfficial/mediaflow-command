@@ -453,7 +453,7 @@ export const resolvedAlerts = [
   { id: 'ra10', title: 'WhatsApp notification API failure', resolvedAt: '2026-02-27 07:30', resolutionTime: '20 min' },
 ];
 
-export const teamMembers = [
+export const teamMembers: Array<{ id: string; name: string; role: string; email: string; channels: string; lastLogin: string; status: 'online' | 'offline' }> = [
   { id: 't1', name: 'Sardar Mohsin', role: 'Owner', email: 'mohsin@unitymediaflow.com', channels: 'All Channels (16)', lastLogin: '2026-03-05 09:15', status: 'online' },
   { id: 't2', name: 'Haseeb', role: 'Manager', email: 'haseeb@unitymediaflow.com', channels: 'BENCH01-04, NEWS01-02, SCARY01, ANIMAL01', lastLogin: '2026-03-05 08:30', status: 'online' },
   { id: 't3', name: 'Waleed', role: 'Manager', email: 'waleed@unitymediaflow.com', channels: 'COMEDY01-02, TECH01, FOOD01, FINANCE01, MOTIVATE01, HISTORY01, SPORTS01', lastLogin: '2026-03-05 07:45', status: 'online' },

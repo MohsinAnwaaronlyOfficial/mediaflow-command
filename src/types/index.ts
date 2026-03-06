@@ -119,7 +119,7 @@ export interface VideoItem {
   youtubeUrl?: string;
   error?: string;
   quiz?: string;
-  variant?: number;
+  variant?: number | string;
   progress?: number;
   files: VideoFolderFile[];
 }
