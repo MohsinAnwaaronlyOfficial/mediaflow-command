@@ -1,9 +1,14 @@
-import { useState } from 'react';
-import { channels, managerChannels, youtubeCategories } from '@/data/mockData';
+import { useState, useEffect } from 'react';
 import { useRoleStore } from '@/stores/roleStore';
+import { channelsApi } from '@/api/channels';
+import { channels as fallbackChannels, managerChannels, youtubeCategories } from '@/data/mockData';
+import type { Channel } from '@/types';
+import TierBadge from '@/components/shared/TierBadge';
+import HealthDot from '@/components/shared/HealthDot';
+import { SkeletonCard } from '@/components/shared/SkeletonCard';
 import {
-  Edit, Plus, RefreshCw, ChevronDown, ChevronRight, ShoppingCart,
-  Settings, Users, Globe, Video, Search, Grid3x3, List, CheckCircle, XCircle, AlertTriangle
+  Plus, RefreshCw, ShoppingCart, Settings, Users, Globe, Video,
+  Search, Grid3x3, List, Snowflake, CheckCircle
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -11,20 +16,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
-function TierBadge({ tier }: { tier: string }) {
-  const cls = tier === 'T1' ? 'badge-t1' : tier === 'T2' ? 'badge-t2' : tier === 'T3' ? 'badge-t3' : 'badge-t4';
-  return <span className={`${cls} rounded-full px-2.5 py-0.5 text-xs font-bold`}>{tier}</span>;
-}
-
-function HealthDot({ ok }: { ok: boolean }) {
-  return <span className={`status-dot ${ok ? 'status-dot-online' : 'status-dot-error'}`} />;
-}
-
-function ChannelDetailPanel({ channelId }: { channelId: string }) {
-  const ch = channels.find(c => c.id === channelId);
-  if (!ch) return null;
-
+function ChannelDetailPanel({ ch }: { ch: Channel }) {
   return (
     <Tabs defaultValue="identity" className="mt-4">
       <TabsList className="grid grid-cols-5 bg-muted/30 h-auto p-1">
@@ -38,7 +32,8 @@ function ChannelDetailPanel({ channelId }: { channelId: string }) {
       <TabsContent value="identity" className="space-y-3 mt-3">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold">Channel Identity</h4>
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/20 text-primary rounded-lg text-xs font-semibold hover:bg-primary/30 transition-colors">
+          <button onClick={() => channelsApi.syncIXProfiles().then(() => toast.success('IXBrowser synced')).catch(() => toast.error('Sync failed'))}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/20 text-primary rounded-lg text-xs font-semibold hover:bg-primary/30 transition-colors">
             <RefreshCw className="w-3 h-3" /> Sync from IXBrowser
           </button>
         </div>
@@ -147,11 +142,20 @@ function ChannelDetailPanel({ channelId }: { channelId: string }) {
 
 export default function Channels() {
   const { role } = useRoleStore();
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [view, setView] = useState<'grid' | 'table'>('grid');
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  useEffect(() => {
+    channelsApi.getChannels()
+      .then(res => setChannels(res.data))
+      .catch(() => setChannels(fallbackChannels))
+      .finally(() => setLoading(false));
+  }, []);
 
   const visibleChannels = role === 'manager'
     ? channels.filter(c => managerChannels.includes(c.id))
@@ -159,15 +163,45 @@ export default function Channels() {
 
   const filtered = visibleChannels.filter(ch => {
     if (filter === 'active' && ch.status !== 'active') return false;
-    if (filter === 'inactive' && ch.status !== 'inactive') return false;
+    if (filter === 'frozen' && ch.status !== 'frozen' && ch.status !== 'inactive') return false;
     if (filter === 'setup' && ch.status !== 'setup_required') return false;
     if (search && !ch.name.toLowerCase().includes(search.toLowerCase()) && !ch.id.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
   const activeCount = visibleChannels.filter(c => c.status === 'active').length;
-  const inactiveCount = visibleChannels.filter(c => c.status === 'inactive').length;
+  const frozenCount = visibleChannels.filter(c => c.status === 'frozen' || c.status === 'inactive').length;
   const setupCount = visibleChannels.filter(c => c.status === 'setup_required').length;
+
+  const handleFreeze = async (channelId: string) => {
+    try {
+      await channelsApi.freezeChannel(channelId);
+      setChannels(prev => prev.map(c => c.id === channelId ? { ...c, status: 'frozen' as const } : c));
+      toast.success(`${channelId} frozen`);
+    } catch {
+      toast.error('Failed to freeze channel');
+    }
+  };
+
+  const handleUnfreeze = async (channelId: string) => {
+    try {
+      await channelsApi.unfreezeChannel(channelId);
+      setChannels(prev => prev.map(c => c.id === channelId ? { ...c, status: 'active' as const } : c));
+      toast.success(`${channelId} activated`);
+    } catch {
+      toast.error('Failed to unfreeze channel');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -177,7 +211,8 @@ export default function Channels() {
           <p className="text-sm text-muted-foreground">Manage all YouTube channels</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-semibold hover:scale-[1.02] transition-transform">
+          <button onClick={() => channelsApi.syncIXProfiles().then(() => toast.success('IXBrowser synced')).catch(() => toast.error('Sync failed'))}
+            className="flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-semibold hover:scale-[1.02] transition-transform">
             <RefreshCw className="w-4 h-4" /> Sync IXBrowser
           </button>
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -189,7 +224,6 @@ export default function Channels() {
             <SheetContent className="bg-card border-border w-[500px] overflow-y-auto">
               <SheetHeader><SheetTitle>Channel Setup Wizard</SheetTitle></SheetHeader>
               <div className="mt-4 space-y-4">
-                <p className="text-sm text-muted-foreground">Step-by-step channel configuration.</p>
                 <div><Label>Channel Name</Label><Input placeholder="e.g. BenchDecoded" className="mt-1" /></div>
                 <div><Label>Niche</Label><Input placeholder="e.g. Judge, Tech, Food" className="mt-1" /></div>
                 <div><Label>Tier</Label>
@@ -200,7 +234,7 @@ export default function Channels() {
                   <div className="flex gap-2 mt-1"><Input placeholder="Paste Drive folder URL" className="flex-1" /><button className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">✓ Verify</button></div>
                 </div>
                 <div><Label>Google Sheet URL</Label>
-                  <div className="flex gap-2 mt-1"><Input placeholder="Paste Sheet URL" className="flex-1" /><button className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">✓ Verify & Setup</button></div>
+                  <div className="flex gap-2 mt-1"><Input placeholder="Paste Sheet URL" className="flex-1" /><button className="px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold">✓ Verify</button></div>
                 </div>
                 <button className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors">
                   🚀 ACTIVATE CHANNEL
@@ -216,7 +250,7 @@ export default function Channels() {
         {[
           { key: 'all', label: `All (${visibleChannels.length})` },
           { key: 'active', label: `Active (${activeCount})` },
-          { key: 'inactive', label: `Inactive (${inactiveCount})` },
+          { key: 'frozen', label: `Frozen (${frozenCount})` },
           { key: 'setup', label: `Setup Required (${setupCount})` },
         ].map(f => (
           <button key={f.key} onClick={() => setFilter(f.key)}
@@ -238,16 +272,22 @@ export default function Channels() {
       {view === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(ch => (
-            <div key={ch.id} className="stat-card space-y-3">
+            <div key={ch.id} className={`stat-card space-y-3 ${ch.status === 'frozen' || ch.status === 'inactive' ? 'border-destructive/20' : ''}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TierBadge tier={ch.tier} />
                   <span className="font-semibold text-sm">{ch.id} — {ch.name}</span>
                 </div>
-                <span className={`flex items-center gap-1 text-xs font-semibold ${ch.status === 'active' ? 'text-success' : ch.status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                  <span className={`status-dot ${ch.status === 'active' ? 'status-dot-online' : ch.status === 'error' ? 'status-dot-error' : 'status-dot-offline'}`} />
-                  {ch.status.toUpperCase()}
-                </span>
+                <button
+                  onClick={() => ch.status === 'active' ? handleFreeze(ch.id) : handleUnfreeze(ch.id)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold transition-colors ${
+                    ch.status === 'active' ? 'bg-success/20 text-success hover:bg-success/30'
+                    : ch.status === 'frozen' || ch.status === 'inactive' ? 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+                    : 'bg-warning/20 text-warning'
+                  }`}
+                >
+                  {ch.status === 'active' ? <><CheckCircle className="w-3 h-3" /> ACTIVE</> : <><Snowflake className="w-3 h-3" /> FROZEN</>}
+                </button>
               </div>
               <p className="text-xs text-muted-foreground">{ch.niche} • IXBrowser {ch.ixProfileId}</p>
 
@@ -263,47 +303,61 @@ export default function Channels() {
               <div className="border-t border-border pt-2 text-xs space-y-1">
                 <div className="flex justify-between"><span className="text-muted-foreground">Schedule</span><span>Long: {ch.longFormPerDay}/day • Shorts: {ch.shortsPerDay}/day</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Times</span><span>{ch.publishTimes.join(', ')}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">A/B Testing</span><span className={ch.videoDefaults.abTesting ? 'text-success' : 'text-muted-foreground'}>{ch.videoDefaults.abTesting ? '● ON' : '○ OFF'}</span></div>
               </div>
 
               <div className="border-t border-border pt-2 grid grid-cols-3 gap-2 text-xs text-center">
                 <div><div className="font-bold text-primary">${ch.monthRevenue}</div><div className="text-[10px] text-muted-foreground">Revenue</div></div>
-                <div><div className="font-bold">{(ch.monthViews/1000).toFixed(0)}K</div><div className="text-[10px] text-muted-foreground">Views</div></div>
+                <div><div className="font-bold">{((ch.monthViews || 0)/1000).toFixed(0)}K</div><div className="text-[10px] text-muted-foreground">Views</div></div>
                 <div><div className="font-bold">{ch.totalPublished}</div><div className="text-[10px] text-muted-foreground">Uploads</div></div>
               </div>
 
               <div className="flex gap-2 border-t border-border pt-2">
-                <button onClick={() => setExpandedChannel(expandedChannel === ch.id ? null : ch.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-muted rounded-lg text-xs font-semibold hover:bg-muted/80 transition-colors">
-                  <Settings className="w-3 h-3" /> Setup
+                <button onClick={() => setExpandedChannel(expandedChannel === ch.id ? null : ch.id)}
+                  className="flex-1 px-3 py-1.5 bg-secondary text-secondary-foreground rounded-lg text-xs font-semibold hover:bg-secondary/80 transition-colors text-center">
+                  ⚙️ Settings
+                </button>
+                <button className="flex-1 px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-semibold hover:bg-muted/80 text-center">
+                  📊 Analytics
+                </button>
+                <button className="flex-1 px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-semibold hover:bg-muted/80 text-center">
+                  🎬 Queue
                 </button>
               </div>
 
-              {expandedChannel === ch.id && <ChannelDetailPanel channelId={ch.id} />}
+              {expandedChannel === ch.id && <ChannelDetailPanel ch={ch} />}
             </div>
           ))}
         </div>
       ) : (
+        /* Table View */
         <div className="stat-card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="border-b border-border">
-              {['Channel','Tier','Niche','Status','Health','Queue','Revenue','Last Upload','Actions'].map(h => (
+              {['Channel','Tier','Niche','Status','Profile','Long/day','Shorts/day','Health','Queue','Revenue'].map(h => (
                 <th key={h} className="text-left py-3 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
               ))}
             </tr></thead>
             <tbody>
               {filtered.map((ch, i) => (
-                <tr key={ch.id} className={`table-row-hover border-b border-border/50 ${i % 2 === 0 ? 'bg-background/20' : ''}`}>
+                <tr key={ch.id} className={`table-row-hover border-b border-border/50 cursor-pointer ${i % 2 === 0 ? 'bg-background/20' : ''}`}
+                  onClick={() => setExpandedChannel(expandedChannel === ch.id ? null : ch.id)}>
                   <td className="py-3 px-2 font-medium">{ch.id} — {ch.name}</td>
                   <td className="py-3 px-2"><TierBadge tier={ch.tier} /></td>
-                  <td className="py-3 px-2 text-muted-foreground">{ch.niche}</td>
-                  <td className="py-3 px-2"><span className={`flex items-center gap-1 text-xs ${ch.status === 'active' ? 'text-success' : ch.status === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    <span className={`status-dot ${ch.status === 'active' ? 'status-dot-online' : ch.status === 'error' ? 'status-dot-error' : 'status-dot-offline'}`} />{ch.status}
-                  </span></td>
-                  <td className="py-3 px-2"><span className="text-xs">{[ch.youtubeLogin, ch.proxyHealth, ch.driveAccess, ch.sheetAccess].filter(Boolean).length}/4 ✅</span></td>
+                  <td className="py-3 px-2 text-muted-foreground text-xs">{ch.niche}</td>
+                  <td className="py-3 px-2"><span className={`text-xs font-semibold ${ch.status === 'active' ? 'text-success' : 'text-destructive'}`}>{ch.status.toUpperCase()}</span></td>
+                  <td className="py-3 px-2 text-xs font-mono">{ch.ixProfileId}</td>
+                  <td className="py-3 px-2">{ch.longFormPerDay}</td>
+                  <td className="py-3 px-2">{ch.shortsPerDay}</td>
+                  <td className="py-3 px-2">
+                    <div className="flex gap-1">
+                      <HealthDot ok={ch.youtubeLogin} />
+                      <HealthDot ok={ch.proxyHealth} />
+                      <HealthDot ok={ch.driveAccess} />
+                      <HealthDot ok={ch.sheetAccess} />
+                    </div>
+                  </td>
                   <td className="py-3 px-2">{ch.uploadQueue}</td>
                   <td className="py-3 px-2 text-primary font-semibold">${ch.monthRevenue}</td>
-                  <td className="py-3 px-2 text-xs text-muted-foreground">{ch.lastVideoTime}</td>
-                  <td className="py-3 px-2"><button className="p-1.5 rounded hover:bg-muted"><Edit className="w-4 h-4 text-muted-foreground" /></button></td>
                 </tr>
               ))}
             </tbody>

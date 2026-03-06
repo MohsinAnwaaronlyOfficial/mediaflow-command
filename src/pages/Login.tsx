@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { Zap, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const { login, loading, error } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    setTimeout(() => {
-      setLoading(false);
-      // Mock: always succeed for now
-      window.location.href = '/';
-    }, 1500);
+    const success = await login(username, password);
+    if (success) {
+      navigate('/');
+    }
   };
 
   return (
@@ -24,7 +25,6 @@ export default function Login() {
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1s' }} />
-        {/* Grid pattern */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: 'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
@@ -33,7 +33,6 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-md px-6">
         <div className="stat-card !p-8 space-y-6">
-          {/* Logo */}
           <div className="text-center space-y-2">
             <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-primary to-[hsl(24,100%,50%)] flex items-center justify-center glow-orange">
               <Zap className="w-8 h-8 text-primary-foreground" />
@@ -45,7 +44,13 @@ export default function Login() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Username</label>
-              <Input placeholder="Enter your username" className="bg-muted/30 border-border" defaultValue="mohsin" />
+              <Input
+                placeholder="Enter your username"
+                className="bg-muted/30 border-border"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
             </div>
             <div className="relative">
               <label className="text-xs font-medium text-muted-foreground mb-1 block">Password</label>
@@ -53,7 +58,9 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 className="bg-muted/30 border-border pr-10"
-                defaultValue="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-8 text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -61,7 +68,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive font-medium animate-shake">
+              <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive font-medium">
                 {error}
               </div>
             )}
